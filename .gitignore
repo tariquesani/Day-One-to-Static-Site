@@ -20,3 +20,4 @@ env/
 .ruff_cache/
 .coverage
 htmlcov/
+archive/entries/manifest.json
