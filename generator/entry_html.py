@@ -202,7 +202,10 @@ def generate_index_html(
 
     output_dir = output_dir_for_date_key(entries_dir, date_key)
     photos_dir = output_dir / "photos"
-    body_html = entry_text_to_html(entry, import_dir, photos_dir)
+    # Derive the photo source folder from the parent of the JSON file used to render
+    # HTML, so that regenerating neighbors continues to find their existing photos.
+    photo_source_root = output_dir
+    body_html = entry_text_to_html(entry, photo_source_root, photos_dir)
 
     # From archive/, css is assets/css/; prev points to entries/YYYY/MM/date-key.html
     prev_url = f"entries/{prev_path}" if prev_path else None
