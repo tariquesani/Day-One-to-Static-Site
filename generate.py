@@ -2,23 +2,27 @@
 
 from pathlib import Path
 
-from generator.manifest import create_or_update
-from generator.zip_handler import pick_zip_path, unzip_to_folder
+from generator import create_or_update, pick_zip_path, unzip_to_folder, write_entry_jsons
 
 
 def main():
     path = pick_zip_path()
     if path:
         project_root = Path(__file__).resolve().parent
-        temp_dir = project_root / "temp"
-        unzip_to_folder(path, temp_dir)
-        print(f"Extracted to {temp_dir}")
+        zip_stem = Path(path).stem
+        import_dir = project_root / "_imports" / zip_stem
+        unzip_to_folder(path, import_dir)
+        print(f"Extracted to {import_dir}")
 
-        dayone_jsons = list(temp_dir.glob("*.json"))
+        dayone_jsons = list(import_dir.glob("*.json"))
         if dayone_jsons:
-            manifest_path = project_root / "archive" / "entries" / "manifest.json"
-            create_or_update(dayone_jsons[0], manifest_path)
+            dayone_json = dayone_jsons[0]
+            entries_dir = project_root / "archive" / "entries"
+            manifest_path = entries_dir / "manifest.json"
+            create_or_update(dayone_json, manifest_path)
             print(f"Manifest updated: {manifest_path}")
+            write_entry_jsons(dayone_json, entries_dir)
+            print("Entry JSONs written")
 
 
 if __name__ == "__main__":

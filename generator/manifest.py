@@ -1,38 +1,9 @@
 """Create or update entries/manifest.json from Day One export JSON."""
 
 import json
-from collections import defaultdict
 from pathlib import Path
 
-
-def _parse_date(date_str: str) -> str:
-    """Extract YYYY-MM-DD from ISO 8601 date string."""
-    return date_str[:10] if date_str else ""
-
-
-def _assign_date_keys(entries_sorted: list[dict]) -> list[tuple[str, str, str]]:
-    """Build (date_key, html_path, creation_date) for each entry, ordered earliest first."""
-    result = []
-    # Group by date to assign _1, _2 suffixes for same-day entries
-    counts: dict[str, int] = defaultdict(int)
-
-    for entry in entries_sorted:
-        creation_date = entry.get("creationDate", "")
-        date_part = _parse_date(creation_date)
-        count = counts[date_part]
-        counts[date_part] += 1
-
-        if count == 0:
-            date_key = date_part
-        else:
-            date_key = f"{date_part}_{count}"
-
-        year, month, _ = date_part.split("-") if len(date_part) == 10 else ("", "", "")
-        html_path = f"{year}/{month}/{date_key}.html" if year and month else f"{date_key}.html"
-
-        result.append((date_key, html_path, creation_date))
-
-    return result
+from generator.archive_paths import assign_date_keys, html_path_for_date_key
 
 
 def create_or_update(dayone_json_path: str | Path, manifest_path: str | Path) -> None:
@@ -49,7 +20,11 @@ def create_or_update(dayone_json_path: str | Path, manifest_path: str | Path) ->
 
     entries_raw = data.get("entries", [])
     entries_sorted = sorted(entries_raw, key=lambda e: e.get("creationDate", ""))
-    new_rows = _assign_date_keys(entries_sorted)
+    rows = assign_date_keys(entries_sorted)
+    new_rows = [
+        (date_key, html_path_for_date_key(date_key), entry.get("creationDate", ""))
+        for date_key, entry in rows
+    ]
 
     # Load existing manifest if present
     existing_by_key: dict[str, tuple[str, str]] = {}  # date_key -> (html_path, creation_date)
