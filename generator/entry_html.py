@@ -155,3 +155,55 @@ def generate_all_entry_html(
                 entries_dir,
                 manifest_path,
             )
+
+    archive_root = entries_dir.parent
+    generate_index_html(import_dir, archive_root, entries_dir, manifest_path)
+
+
+def generate_index_html(
+    import_dir: Path,
+    archive_root: Path,
+    entries_dir: Path,
+    manifest_path: Path,
+) -> None:
+    """
+    Generate archive/index.html with a copy of the latest entry and a Previous link.
+    """
+    manifest_entries = _load_manifest(manifest_path)
+    if not manifest_entries:
+        return
+
+    date_key, html_path = manifest_entries[-1]
+    prev_path = manifest_entries[-2][1] if len(manifest_entries) > 1 else None
+
+    date_part = date_key.split("_")[0]
+    parts = date_part.split("-")
+    year, month = (parts[0], parts[1]) if len(parts) >= 2 else ("0000", "00")
+    entry_json_path = entries_dir / year / month / f"{date_key}.json"
+
+    if not entry_json_path.exists():
+        return
+
+    with open(entry_json_path, encoding="utf-8") as f:
+        entry = json.load(f)
+
+    output_dir = output_dir_for_date_key(entries_dir, date_key)
+    photos_dir = output_dir / "photos"
+    body_html = entry_text_to_html(entry, import_dir, photos_dir)
+
+    # From archive/, css is assets/css/; prev points to entries/YYYY/MM/date-key.html
+    prev_url = f"entries/{prev_path}" if prev_path else None
+    next_url = None
+
+    context = _template_context(
+        entry, date_key, body_html, prev_url, next_url
+    )
+    context["css_path"] = "assets/css/"
+
+    templates_dir = Path(__file__).resolve().parent / "templates"
+    env = Environment(loader=FileSystemLoader(templates_dir))
+    template = env.get_template("entry.html")
+    html = template.render(context)
+
+    index_path = archive_root / "index.html"
+    index_path.write_text(html, encoding="utf-8")

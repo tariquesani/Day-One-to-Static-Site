@@ -1,7 +1,7 @@
 plans and discussions/*
 temp/
 _imports/
-archive/entries/*
+archive/*
 
 # Python
 __pycache__/
