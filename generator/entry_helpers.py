@@ -10,8 +10,6 @@ def get_location(entry: dict) -> str:
 
     locations: list[str] = []
     for key in ["userLabel", "placeName", "localityName", "administrativeArea", "country"]:
-        if key == "placeName" and "userLabel" in entry["location"]:
-            continue
         if key in entry["location"]:
             locations.append(entry["location"][key])
     return ", ".join(locations)
@@ -55,11 +53,91 @@ def get_weather(entry: dict) -> str:
 
     temp = int(we["temperatureCelsius"])
     desc = we["conditionsDescription"]
-    parts: list[str] = []
-    if "location" in entry and "localityName" in entry["location"]:
-        parts.append(entry["location"]["localityName"])
-    parts.append(f"{temp}°C {desc}")
-    return " ".join(parts)
+    return f"{temp}°C {desc}"
+
+
+def get_place_name(entry: dict) -> str:
+    """Extract placeName from entry location."""
+    if "location" not in entry or "placeName" not in entry["location"]:
+        return ""
+    name = entry["location"]["placeName"] or ""
+    if name == "Sanis":
+        return "SANI's"
+    return name
+
+
+def get_locality_name(entry: dict) -> str:
+    """Extract localityName from entry location."""
+    if "location" not in entry or "localityName" not in entry["location"]:
+        return ""
+    return entry["location"]["localityName"] or ""
+
+
+def get_country(entry: dict) -> str:
+    """Extract country from entry location."""
+    if "location" not in entry or "country" not in entry["location"]:
+        return ""
+    return entry["location"]["country"]
+
+
+# Weather code -> emoji (Day One weatherCode values)
+WEATHER_EMOJI: dict[str, str] = {
+    "clear": "☀️",
+    "mostly-clear": "🌤️",
+    "partly-cloudy": "⛅",
+    "mostly-cloudy": "☁️",
+    "cloudy": "☁️",
+    "overcast": "☁️",
+    "fog": "🌫️",
+    "haze": "🌫️",
+    "mist": "🌫️",
+    "drizzle": "🌦️",
+    "rain": "🌧️",
+    "heavy-rain": "🌧️",
+    "snow": "❄️",
+    "sleet": "🌨️",
+    "thunderstorm": "⛈️",
+    "tornado": "🌪️",
+    "hurricane": "🌀",
+}
+
+# Moon phase code -> emoji
+MOON_EMOJI: dict[str, str] = {
+    "new": "🌑",
+    "waxing-crescent": "🌒",
+    "first-quarter": "🌓",
+    "waxing-gibbous": "🌔",
+    "full": "🌕",
+    "waning-gibbous": "🌖",
+    "last-quarter": "🌗",
+    "waning-crescent": "🌘",
+}
+
+
+def get_weather_emoji(entry: dict) -> str:
+    """Return emoji for weather condition."""
+    if "weather" not in entry or "weatherCode" not in entry["weather"]:
+        return ""
+    code = entry["weather"]["weatherCode"]
+    return WEATHER_EMOJI.get(code, "🌡️")
+
+
+def get_moon_emoji(entry: dict) -> str:
+    """Return emoji for moon phase."""
+    if "weather" not in entry or "moonPhaseCode" not in entry["weather"]:
+        return ""
+    code = entry["weather"]["moonPhaseCode"]
+    return MOON_EMOJI.get(code, "🌙")
+
+
+def format_moon_phase(entry: dict) -> str:
+    """Format moon phase code for display (e.g. waning-gibbous → Waning Gibbous)."""
+    if "weather" not in entry or "moonPhaseCode" not in entry["weather"]:
+        return ""
+    code = entry["weather"]["moonPhaseCode"]
+    if not code:
+        return ""
+    return code.replace("-", " ").title()
 
 
 def get_tags(

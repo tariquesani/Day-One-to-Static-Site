@@ -3,6 +3,7 @@
 from pathlib import Path
 
 from generator import create_or_update, pick_zip_path, unzip_to_folder, write_entry_jsons
+from generator.entry_html import generate_all_entry_html
 
 
 def main():
@@ -23,6 +24,8 @@ def main():
             print(f"Manifest updated: {manifest_path}")
             write_entry_jsons(dayone_json, entries_dir)
             print("Entry JSONs written")
+            generate_all_entry_html(import_dir, entries_dir, manifest_path)
+            print("Entry HTMLs written")
 
 
 if __name__ == "__main__":

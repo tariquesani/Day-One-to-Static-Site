@@ -1,6 +1,7 @@
 plans and discussions/*
 temp/
 _imports/
+archive/entries/*
 
 # Python
 __pycache__/
@@ -21,4 +22,3 @@ env/
 .ruff_cache/
 .coverage
 htmlcov/
-archive/entries/manifest.json
