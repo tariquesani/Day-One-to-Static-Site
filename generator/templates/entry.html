@@ -11,27 +11,25 @@
   <main>
     <article class="entry" aria-labelledby="entry-title">
 
-      <header>
-        <h1 id="entry-title">
-          <time datetime="{{ creation_date_iso }}">
-            {{ creation_date_formatted }}
-          </time>
-        </h1>
+      <h1 id="entry-title">
+        <time datetime="{{ creation_date_iso }}">
+          {{ creation_date_formatted }}{% if creation_time_formatted %} <span class="entry-time">{{ creation_time_formatted }}</span>{% endif %}
+        </time>
+      </h1>
 
-        {% if location %}
-        <p class="entry-meta">
-            <span class="location h-geo">
-              {% if place_name %}<span class="p-name">{{ place_name }}</span>{% if locality_name or country %}, {% endif %}{% endif %}
-              {% if locality_name %}<span class="p-locality">{{ locality_name }}</span>{% if country %}, {% endif %}{% endif %}
-              {% if country %}<span class="p-country-name">{{ country }}</span>{% endif %}
-              {% if latitude and longitude %}
-              <data class="p-latitude" value="{{ latitude }}"></data>
-              <data class="p-longitude" value="{{ longitude }}"></data>
-              {% endif %}
-            </span>
-          </p>
-        {% endif %}
-      </header>
+      {% if location %}
+      <p class="entry-meta">
+          <span class="location h-geo">
+            {% if place_name %}<span class="p-name">{{ place_name }}</span>{% if locality_name or country %}, {% endif %}{% endif %}
+            {% if locality_name %}<span class="p-locality">{{ locality_name }}</span>{% if country %}, {% endif %}{% endif %}
+            {% if country %}<span class="p-country-name">{{ country }}</span>{% endif %}
+            {% if latitude and longitude %}
+            <data class="p-latitude" value="{{ latitude }}"></data>
+            <data class="p-longitude" value="{{ longitude }}"></data>
+            {% endif %}
+          </span>
+        </p>
+      {% endif %}
 
       <section class="entry-body">
         {{ body_html | safe }}
