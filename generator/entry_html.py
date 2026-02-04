@@ -13,14 +13,26 @@ from generator.text_to_html import entry_text_to_html
 
 
 def _format_creation_date(iso_date: str) -> str:
-    """Format ISO date for display (e.g. February 1, 2026)."""
+    """Format ISO date for display (e.g. Sat, 31 Jan 2026)."""
     if not iso_date:
         return ""
     try:
         dt = datetime.fromisoformat(iso_date.replace("Z", "+00:00"))
-        return dt.strftime("%B %d, %Y")
+        return dt.strftime("%a, %d %b %Y")
     except (ValueError, TypeError):
         return iso_date[:10] if iso_date else ""
+
+
+def _format_creation_time(iso_date: str) -> str:
+    """Format ISO date time for display in entry timezone (e.g. 5:53 AM)."""
+    if not iso_date:
+        return ""
+    try:
+        dt = datetime.fromisoformat(iso_date.replace("Z", "+00:00"))
+        hour = dt.hour % 12 or 12
+        return f"{hour}:{dt.minute:02d} {dt.strftime('%p')}"
+    except (ValueError, TypeError):
+        return ""
 
 
 def _template_context(
@@ -43,6 +55,7 @@ def _template_context(
         "title": title,
         "creation_date_iso": creation_date,
         "creation_date_formatted": _format_creation_date(creation_date),
+        "creation_time_formatted": _format_creation_time(creation_date),
         "location": entry_helpers.get_location(entry),
         "place_name": entry_helpers.get_place_name(entry),
         "locality_name": entry_helpers.get_locality_name(entry),
