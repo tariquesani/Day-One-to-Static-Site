@@ -31,6 +31,8 @@
   top: 0;
   z-index: 1;
   background: white;
-  /* keep layout consistent when sticking */
-  margin-top: 0;
+  /* a touch more space at top initially */
+  margin-top: 1rem;
+  /* add a tiny gap below when sticky */
+  padding-bottom: 0.5rem;
 }
