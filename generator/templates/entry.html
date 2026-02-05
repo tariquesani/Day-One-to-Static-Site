@@ -48,9 +48,12 @@
     </article>
 
     <nav class="entry-nav" aria-label="Entry navigation">
-      {% if prev_url %}<a href="{{ prev_url }}" rel="prev">Previous</a>{% endif %}
-      {% if prev_url and next_url %} · {% endif %}
-      {% if next_url %}<a href="{{ next_url }}" rel="next">Next</a>{% endif %}
+      <span class="entry-nav-prev-next">
+        {% if prev_url %}<a href="{{ prev_url }}" rel="prev">Previous</a>{% endif %}
+        {% if prev_url and next_url %} · {% endif %}
+        {% if next_url %}<a href="{{ next_url }}" rel="next">Next</a>{% endif %}
+      </span>
+      <a href="{{ index_url }}" class="entry-nav-index">List</a>
     </nav>
   </main>
 </body>

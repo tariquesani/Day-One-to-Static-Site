@@ -25,6 +25,15 @@
   opacity: 0.85;
 }
 
+/* Entry nav: prev/next left, index right */
+.entry-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5em;
+}
+
 /* Sticky entry title */
 #entry-title {
   position: sticky;

@@ -41,6 +41,7 @@ def _template_context(
     body_html: str,
     prev_url: str | None,
     next_url: str | None,
+    index_url: str,
 ) -> dict:
     """Build the Jinja template context for an entry."""
     creation_date = entry.get("creationDate", "")
@@ -69,6 +70,7 @@ def _template_context(
         "moon_emoji": entry_helpers.get_moon_emoji(entry),
         "prev_url": prev_url,
         "next_url": next_url,
+        "index_url": index_url,
         "css_path": "../../../assets/css/",
     }
 
@@ -98,6 +100,24 @@ def _load_manifest_full(manifest_path: Path) -> list[tuple[str, str, str]]:
         elif len(row) >= 2:
             result.append((row[0], row[1], row[0]))
     return result
+
+
+def _year_range_from_manifest(manifest_path: Path) -> str:
+    """Return 'YYYY – YYYY' from oldest to newest entry year, or '' if no entries."""
+    manifest_full = _load_manifest_full(manifest_path)
+    if not manifest_full:
+        return ""
+    years = []
+    for date_key, _, _ in manifest_full:
+        date_part = date_key.split("_")[0]
+        if len(date_part) >= 4:
+            try:
+                years.append(int(date_part[:4]))
+            except ValueError:
+                pass
+    if not years:
+        return ""
+    return f"{min(years)} – {max(years)}"
 
 
 def _format_month_title(year_month: str) -> str:
@@ -186,8 +206,10 @@ def generate_entry_html(
 
     manifest_entries = _load_manifest(manifest_path)
     prev_url, next_url = _prev_next_urls(date_key, manifest_entries, output_dir, entries_dir)
+    archive_root = entries_dir.parent
+    index_url = os.path.relpath(archive_root / "index.html", output_dir).replace("\\", "/")
 
-    context = _template_context(entry, date_key, body_html, prev_url, next_url)
+    context = _template_context(entry, date_key, body_html, prev_url, next_url, index_url)
 
     templates_dir = Path(__file__).resolve().parent / "templates"
     env = Environment(loader=FileSystemLoader(templates_dir))
@@ -306,6 +328,7 @@ def generate_index_html(
         "media_url": "media.html",
         "map_url": "map.html",
         "months": months_list,
+        "year_range": _year_range_from_manifest(manifest_path),
     }
     html = template.render(context)
     index_path = archive_root / "index.html"
