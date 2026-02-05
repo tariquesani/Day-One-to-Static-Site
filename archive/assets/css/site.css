@@ -1,5 +1,16 @@
 /* Site-specific overrides and extensions for dayone-archive */
 
+/* Link color – entry nav only */
+.entry-nav a {
+  color: #4fc3f7;
+}
+.entry-nav a:visited {
+  color: #29b6f6;
+}
+.entry-nav a:hover {
+  color: #0288d1;
+}
+
 /* Weather and moon on same line */
 .entry-footer .entry-context {
   margin: 0;

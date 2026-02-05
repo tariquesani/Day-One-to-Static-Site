@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <title>{% block title %}The Narrative{% endblock %}</title>
@@ -7,6 +8,7 @@
   <link rel="stylesheet" href="{{ css_path }}site.css">
   <link rel="stylesheet" href="{{ css_path }}index.css">
 </head>
+
 <body>
 
   <!-- Large banner (first load) -->
@@ -25,27 +27,42 @@
 
     <!-- White content area with subtle rounded top; holds tabs + main content -->
     <div class="content-sheet">
-    <nav class="tabs" aria-label="View">
-      <a href="{{ index_url }}" class="tab{% if active_tab == 'list' %} is-active{% endif %}">List</a>
-      <a href="{{ calendar_url }}" class="tab{% if active_tab == 'calendar' %} is-active{% endif %}">Calendar</a>
-      <a href="{{ media_url }}" class="tab{% if active_tab == 'media' %} is-active{% endif %}">Media</a>
-      <a href="{{ map_url }}" class="tab{% if active_tab == 'map' %} is-active{% endif %}">Map</a>
-    </nav>
+      <nav class="tabs" aria-label="View">
+        <a href="{{ index_url }}" class="tab{% if active_tab == 'list' %} is-active{% endif %}">List</a>
+        <a href="{{ calendar_url }}" class="tab{% if active_tab == 'calendar' %} is-active{% endif %}">Calendar</a>
+        <a href="{{ media_url }}" class="tab{% if active_tab == 'media' %} is-active{% endif %}">Media</a>
+        <a href="{{ map_url }}" class="tab{% if active_tab == 'map' %} is-active{% endif %}">Map</a>
+      </nav>
 
-    {% block content %}{% endblock %}
+      {% block content %}{% endblock %}
     </div>
   </div>
 
   <script>
-    (function() {
+    (function () {
       var hero = document.querySelector('.hero-header');
       if (!hero) return;
-      var observer = new IntersectionObserver(function(entries) {
+      var observer = new IntersectionObserver(function (entries) {
         var e = entries[0];
         document.body.classList.toggle('hero-out', !e.isIntersecting);
-      }, { rootMargin: '0px', threshold: 0 });
+      }, { rootMargin: '0px', threshold: 0.20 });
       observer.observe(hero);
     })();
+
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+  
+    document.addEventListener('DOMContentLoaded', () => {
+      const y = sessionStorage.getItem('indexScroll');
+      if (y) window.scrollTo(0, parseInt(y, 10));
+    });
+  
+    window.addEventListener('beforeunload', () => {
+      sessionStorage.setItem('indexScroll', window.scrollY);
+    });
   </script>
+  
 </body>
+
 </html>
