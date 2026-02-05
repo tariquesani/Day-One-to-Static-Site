@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}The Narrative{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{{ css_path }}site.css">
+  <link rel="stylesheet" href="{{ css_path }}index.css">
+</head>
+<body>
+
+  <!-- Large banner (first load) -->
+  <header class="hero-header">
+    <h1>The Narrative</h1>
+    <p class="subtitle">2012 – 2026</p>
+  </header>
+
+  <!-- Wrapper so compact header can stick; hidden until hero scrolls out (JS toggles .hero-out) -->
+  <div class="main-wrap">
+    <div class="compact-header-wrap">
+      <header class="compact-header">
+        <h1>The Narrative</h1>
+      </header>
+    </div>
+
+    <!-- White content area with subtle rounded top; holds tabs + main content -->
+    <div class="content-sheet">
+    <nav class="tabs" aria-label="View">
+      <a href="{{ index_url }}" class="tab{% if active_tab == 'list' %} is-active{% endif %}">List</a>
+      <a href="{{ calendar_url }}" class="tab{% if active_tab == 'calendar' %} is-active{% endif %}">Calendar</a>
+      <a href="{{ media_url }}" class="tab{% if active_tab == 'media' %} is-active{% endif %}">Media</a>
+      <a href="{{ map_url }}" class="tab{% if active_tab == 'map' %} is-active{% endif %}">Map</a>
+    </nav>
+
+    {% block content %}{% endblock %}
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      var hero = document.querySelector('.hero-header');
+      if (!hero) return;
+      var observer = new IntersectionObserver(function(entries) {
+        var e = entries[0];
+        document.body.classList.toggle('hero-out', !e.isIntersecting);
+      }, { rootMargin: '0px', threshold: 0 });
+      observer.observe(hero);
+    })();
+  </script>
+</body>
+</html>

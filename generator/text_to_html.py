@@ -93,3 +93,72 @@ def entry_text_to_html(
         output_format="html5",
     )
     return html
+
+
+def _first_photo_filename_from_photos_dir(
+    entry: dict,
+    photos_dir: Path,
+) -> str | None:
+    """
+    Resolve the first image in the entry text to a filename that already exists
+    in photos_dir (e.g. from when the entry HTML was generated). Uses entry
+    metadata (identifier, md5) to match files in photos_dir; does not use
+    import_dir, so it works for entries from any import.
+    """
+    text = entry.get("text", "") or ""
+    photos_meta = entry.get("photos", []) or []
+    match = PHOTO_REF_RE.search(text)
+    if not match:
+        return None
+    identifier = match.group(2).strip()
+    by_id: dict[str, dict] = {}
+    for p in photos_meta:
+        if "identifier" in p:
+            by_id[p["identifier"]] = p
+    meta = by_id.get(identifier) if by_id else None
+    if not photos_dir.exists():
+        return None
+    files_in_dir = list(photos_dir.iterdir())
+    # Match by md5 (Day One often names export files by md5)
+    if meta and "md5" in meta:
+        md5_val = meta["md5"]
+        for f in files_in_dir:
+            if f.is_file() and (f.stem == md5_val or f.name == md5_val or md5_val in f.name):
+                return f.name
+    # Fallback: match by identifier in filename
+    for f in files_in_dir:
+        if f.is_file() and identifier in (f.stem, f.name):
+            return f.name
+    return None
+
+
+def get_first_photo_filename(
+    entry: dict,
+    import_dir: Path,
+    photos_output_dir: Path,
+) -> str | None:
+    """
+    Return the filename of the first image in the entry, if it already exists in
+    photos_output_dir. Prefer resolving from photos already in photos_output_dir
+    (works for entries from any import); fall back to import_dir only for
+    current-import entries whose photos_dir might not exist yet.
+    """
+    # Prefer: find filename by matching entry metadata to files already in photos_dir
+    name = _first_photo_filename_from_photos_dir(entry, photos_output_dir)
+    if name:
+        return name
+    # Fallback: resolve from import (for current import before entry HTML is regenerated)
+    text = entry.get("text", "") or ""
+    photos_meta = entry.get("photos", []) or []
+    match = PHOTO_REF_RE.search(text)
+    if not match:
+        return None
+    identifier = match.group(2).strip()
+    src = _find_photo_file(import_dir, identifier, photos_meta)
+    if not src:
+        return None
+    dest_name = src.name
+    dest_path = photos_output_dir / dest_name
+    if not dest_path.exists():
+        return None
+    return dest_name

@@ -1,0 +1,273 @@
+/* =========================================================
+   Index (list) layout only
+   Hero banner, compact header on scroll, tabs,
+   sticky month titles, entry rows with optional thumbnails.
+   Load with site.css on the index page (base template).
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   Root variables for index layout
+   --------------------------------------------------------- */
+:root {
+  --bg: #ffffff;
+  --ink: #111111;
+  --muted: #666666;
+  --divider: #e5e5e5;
+  --accent: #4fc3f7;
+
+  --hero-height: 11rem;
+  --compact-height: 3.5rem;
+  --tabs-height: 2.5rem; /* approx. for sticky offset of month below tabs */
+  --sheet-radius: 6px;
+  --content-max: 42rem;
+  /* Inset from viewport to content-sheet */
+  --content-inset: max(1.25rem, calc((100vw - var(--content-max)) / 2));
+  --content-padding-x: 20px; /* horizontal padding for tabs, month, entry rows */
+  --header-padding-extra: 12px; /* extra inset for header (smaller than content = header slightly left) */
+  --header-padding-x: calc(var(--content-inset) + var(--header-padding-extra));
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+
+/* ---------------------------------------------------------
+   Hero header (large banner on first load)
+   Not sticky – scrolls out with the page so compact header can take over.
+   --------------------------------------------------------- */
+.hero-header {
+  height: var(--hero-height);
+  padding: 3rem var(--header-padding-x) 1.5rem;
+  background: var(--accent);
+  color: white;
+  z-index: 3;
+}
+
+.hero-header h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.hero-header .subtitle {
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+
+/* ---------------------------------------------------------
+   Compact header: hidden until hero scrolls out (JS adds .hero-out).
+   When visible, position:fixed so it stays at top; reserve space via padding.
+   --------------------------------------------------------- */
+.compact-header-wrap {
+  height: 0;
+  overflow: hidden;
+}
+
+body.hero-out .compact-header-wrap {
+  overflow: visible;
+}
+
+.compact-header {
+  height: var(--compact-height);
+  padding: 0 var(--header-padding-x);
+  background: var(--accent);
+  color: white;
+  display: flex;
+  align-items: center;
+  z-index: 4;
+  transform: translateY(-100%);
+  transition: transform 0.25s ease-out;
+}
+
+body.hero-out .compact-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  transform: translateY(0);
+}
+
+.compact-header h1 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Reserve space for fixed compact bar; animate so content doesn’t jump */
+.main-wrap {
+  position: relative;
+  transition: padding-top 0.25s ease-out;
+}
+
+body.hero-out .main-wrap {
+  padding-top: var(--compact-height);
+}
+
+
+/* ---------------------------------------------------------
+   Content sheet (white area, rounded top)
+   Match entry page width for consistency.
+   --------------------------------------------------------- */
+.content-sheet {
+  max-width: var(--content-max);
+  margin-left: auto;
+  margin-right: auto;
+  background: var(--bg);
+  border-radius: var(--sheet-radius) var(--sheet-radius) 0 0;
+  margin-top: 0;
+  position: relative;
+  z-index: 2;
+}
+
+
+/* ---------------------------------------------------------
+   Tabs (List | Calendar | Media | Map)
+   When compact header is fixed (hero-out), tabs stick below it.
+   --------------------------------------------------------- */
+.tabs {
+  display: flex;
+  gap: 1rem;
+  padding: 0.75rem var(--content-padding-x) 0;
+  border-bottom: 1px solid var(--divider);
+}
+
+body.hero-out .tabs {
+  position: sticky;
+  top: var(--compact-height);
+  z-index: 3;
+  background: var(--bg);
+}
+
+.tab {
+  font-size: 0.95rem;
+  color: var(--muted);
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.tab:hover {
+  color: var(--ink);
+}
+
+.tab.is-active {
+  font-weight: 600;
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+
+
+/* ---------------------------------------------------------
+   List container and month sections
+   --------------------------------------------------------- */
+.index {
+  padding-bottom: 2rem;
+}
+
+.month {
+  margin-top: 1.5rem;
+}
+
+.month:first-of-type {
+  margin-top: 0;
+}
+
+.month h2 {
+  position: sticky;
+  top: 0;
+  margin: 0;
+  padding: 0.5rem var(--content-padding-x);
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: var(--bg);
+  border-bottom: 1px solid var(--divider);
+  z-index: 2;
+}
+
+/* When compact + tabs are sticky, month sticks below them */
+body.hero-out .month h2 {
+  top: calc(var(--compact-height) + var(--tabs-height));
+}
+
+
+/* ---------------------------------------------------------
+   Entry rows (list view)
+   --------------------------------------------------------- */
+.entry-row {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr;
+  gap: 0.75rem;
+  padding: 0.75rem var(--content-padding-x);
+  border-bottom: 1px solid var(--divider);
+  align-items: start;
+}
+
+.entry-row:has(.entry-thumb) {
+  grid-template-columns: 3.5rem 1fr 56px;
+}
+
+.entry-row:active {
+  background: #f2f8fc;
+}
+
+.entry-row time {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.entry-row .dow {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.entry-row .day {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.entry-row .entry-meta {
+  min-width: 0;
+}
+
+.entry-row .entry-title {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.entry-row .entry-sub {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.entry-row .entry-thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}

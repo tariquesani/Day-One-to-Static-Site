@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}The Narrative{% endblock %}
+{% block content %}
+  <main class="index">
+    {% for month in months %}
+    <section class="month">
+      <h2>{{ month.title }}</h2>
+      {% for row in month.entries %}
+      <a class="entry-row" href="{{ row.entry_url }}">
+        <time datetime="{{ row.date_iso }}">
+          <span class="dow">{{ row.dow }}</span>
+          <span class="day">{{ row.day }}</span>
+        </time>
+        <div class="entry-meta">
+          <p class="entry-title">{{ row.snippet }}</p>
+          <p class="entry-sub">{{ row.meta_line }}</p>
+        </div>
+        {% if row.thumbnail_url %}
+        <img class="entry-thumb" src="{{ row.thumbnail_url }}" alt="" width="56" height="56" loading="lazy">
+        {% endif %}
+      </a>
+      {% endfor %}
+    </section>
+    {% endfor %}
+  </main>
+{% endblock %}
