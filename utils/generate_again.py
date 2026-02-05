@@ -2,6 +2,7 @@
 
 import json
 import sys
+import time
 from pathlib import Path
 
 # Allow importing generator when run from project root or from utils/
@@ -64,6 +65,8 @@ def _prev_next_map(manifest_path: Path) -> dict[str, tuple[str | None, str | Non
 
 
 def main() -> None:
+    total_start = time.perf_counter()
+
     imports_base = _project_root / "_imports"
     entries_dir = _project_root / "archive" / "entries"
     manifest_path = entries_dir / "manifest.json"
@@ -84,7 +87,12 @@ def main() -> None:
     # Regenerate HTML for every entry in the manifest
     prev_next = _prev_next_map(manifest_path)
     manifest_entries = list(prev_next.keys())
-    for date_key in manifest_entries:
+
+    entries_html_start = time.perf_counter()
+    total_entries = len(manifest_entries)
+    bar_width = 40
+
+    for idx, date_key in enumerate(manifest_entries, start=1):
         date_part = date_key.split("_")[0]
         parts = date_part.split("-")
         year, month = (parts[0], parts[1]) if len(parts) >= 2 else ("0000", "00")
@@ -101,12 +109,40 @@ def main() -> None:
             manifest_path=manifest_path,
         )
 
+        # Simple terminal progress bar for entry HTML generation
+        if total_entries:
+            progress = idx / total_entries
+            filled = int(bar_width * progress)
+            bar = "#" * filled + "-" * (bar_width - filled)
+            sys.stdout.write(f"\rEntries: [{bar}] {idx}/{total_entries}")
+            sys.stdout.flush()
+
+    if total_entries:
+        sys.stdout.write("\n")
+
     # Regenerate index (use first import dir for thumbnail fallback; photos usually in archive)
     archive_root = entries_dir.parent
     first_import_dir = pairs[0][0]
+
+    index_html_start = time.perf_counter()
     generate_index_html(first_import_dir, archive_root, entries_dir, manifest_path)
+    index_html_end = time.perf_counter()
+
+    total_end = time.perf_counter()
+
+    # Simple stats
+    prev_links = sum(1 for prev, _ in prev_next.values() if prev is not None)
+    next_links = sum(1 for _, nxt in prev_next.values() if nxt is not None)
+    neighbour_links = prev_links + next_links
 
     print(f"Regenerated {len(manifest_entries)} entries and index.")
+    print("Stats:")
+    print(f"  Total imports: {len(pairs)}")
+    print(f"  Total entries: {len(manifest_entries)}")
+    print(f"  Neighbour links (prev+next): {neighbour_links}")
+    print(f"  Time for entry HTML: {index_html_start - entries_html_start:.2f}s")
+    print(f"  Time for index.html: {index_html_end - index_html_start:.2f}s")
+    print(f"  Total time: {total_end - total_start:.2f}s")
 
 
 if __name__ == "__main__":
