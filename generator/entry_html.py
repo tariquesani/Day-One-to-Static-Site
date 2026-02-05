@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -132,16 +133,61 @@ def _format_month_title(year_month: str) -> str:
 
 
 def _index_snippet(entry: dict, max_len: int = 80) -> str:
-    """First line of entry text or title, truncated with ellipsis."""
-    raw = entry_helpers.get_title(entry)
-    if not raw:
-        raw = (entry.get("text") or "").strip().split("\n")[0] if entry.get("text") else ""
-    if not raw:
+    """
+    Build a short snippet for the index from the first one or two
+    non-empty, non-image lines of the entry text, up to max_len.
+    Also strips simple Markdown-style backslash escapes so that
+    sequences like '\\.' render as '.'.
+    """
+
+    def _unescape_markdown(s: str) -> str:
+        # Unescape common Markdown backslash-escaped punctuation.
+        return re.sub(r"\\([\\`*_{}\[\]()#+\-.!])", r"\1", s)
+
+    text = _unescape_markdown((entry.get("text") or "").strip())
+    if not text:
+        # Fallback to title helper for entries without text.
+        raw = entry_helpers.get_title(entry)
+        if not raw:
+            return ""
+        raw = _unescape_markdown(raw.strip())
+        if len(raw) <= max_len:
+            return raw
+        return raw[: max_len - 1].rstrip() + "…"
+
+    # Collect the first few meaningful lines (similar to get_title logic).
+    lines: list[str] = []
+    for line in text.split("\n"):
+        candidate = line.strip()
+        if not candidate:
+            continue
+        # Skip pure image markdown lines.
+        if re.match(r"!\[\]", candidate):
+            continue
+        # Strip markdown headers (e.g. "## Heading").
+        if re.search(r"^#+\s*", candidate) and not candidate.startswith("# ["):
+            candidate = re.sub(r"^#+\s*", "", candidate)
+        if candidate:
+            lines.append(candidate)
+        if len(lines) >= 3:
+            break
+
+    if not lines:
         return ""
-    raw = raw.strip()
-    if len(raw) <= max_len:
-        return raw
-    return raw[: max_len - 1].rstrip() + "…"
+
+    # Combine the first one or two lines, then truncate to max_len.
+    snippet = " ".join(lines[:2]).strip()
+
+    # Special exception: normalize this specific place name spelling in snippets.
+    # If the entry's placeName is "Sanis", show it as "SANI's" instead.
+    loc = entry.get("location") or {}
+    place_name = (loc.get("placeName") or "").strip()
+    if place_name == "Sanis":
+        snippet = snippet.replace("Sanis", "SANI's")
+
+    if len(snippet) <= max_len:
+        return snippet
+    return snippet[: max_len - 1].rstrip() + "…"
 
 
 def _index_meta_line(entry: dict) -> str:
@@ -154,6 +200,10 @@ def _index_meta_line(entry: dict) -> str:
             parts.append(t)
     loc = entry_helpers.get_location(entry)
     if loc:
+        # Special exception: normalize this specific place name spelling.
+        # If the placeName is "Sanis", show it as "SANI's" instead.
+        if "Sanis" in loc:
+            loc = loc.replace("Sanis", "SANI's")
         parts.append(loc)
     weather = entry_helpers.get_weather(entry)
     if weather:
