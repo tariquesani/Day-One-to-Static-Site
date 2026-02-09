@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}The Narrative · Calendar{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ css_path }}calendar.css">
+{% endblock %}
+{% block content %}
+  <div class="calendar-main">
+    <div class="calendar-weekdays" role="row" aria-label="Days of the week">
+      {% for w in weekdays %}
+      <span class="calendar-weekday" role="columnheader">{{ w }}</span>
+      {% endfor %}
+    </div>
+
+    {% for year_data in years %}
+    {% for month in year_data.months %}
+    <section class="calendar-month" aria-label="{{ month.title }}">
+      <h2 class="calendar-month-title">{{ month.title }}</h2>
+      <div class="calendar-grid" role="grid" aria-label="{{ month.title }} calendar">
+        {% for cell in month.cells %}
+        {% if cell.empty and not cell.get('day') %}
+        <span class="calendar-cell calendar-cell--pad" role="gridcell"></span>
+        {% elif cell.state == 'empty' %}
+        <span class="calendar-cell calendar-cell--empty" role="gridcell"><span class="calendar-day-num">{{ cell.day }}</span></span>
+        {% elif cell.single_url %}
+        <a href="{{ cell.single_url }}" class="calendar-cell calendar-cell--{{ cell.state }}" role="gridcell" data-date="{{ month.year }}-{{ '%02d' % month.month }}-{{ '%02d' % cell.day }}">
+          {% if cell.thumbnail_url %}
+          <img src="{{ cell.thumbnail_url }}" alt="" class="calendar-tile-img" loading="lazy" width="1" height="1">
+          {% endif %}
+          <span class="calendar-day-num">{{ cell.day }}</span>
+        </a>
+        {% else %}
+        <button type="button" class="calendar-cell calendar-cell--{{ cell.state }} calendar-cell--multi" role="gridcell" data-entries="{{ cell.entries_json | e }}" data-date="{{ month.year }}-{{ '%02d' % month.month }}-{{ '%02d' % cell.day }}" aria-haspopup="dialog">
+          {% if cell.thumbnail_url %}
+          <img src="{{ cell.thumbnail_url }}" alt="" class="calendar-tile-img" loading="lazy" width="1" height="1">
+          {% endif %}
+          <span class="calendar-day-num">{{ cell.day }}</span>
+        </button>
+        {% endif %}
+        {% endfor %}
+      </div>
+    </section>
+    {% endfor %}
+    {% endfor %}
+  </div>
+
+  <dialog id="calendar-day-dialog" class="calendar-dialog" aria-label="Entries for this day">
+    <div class="calendar-dialog-inner">
+      <p class="calendar-dialog-date" id="calendar-dialog-date"></p>
+      <ul class="calendar-dialog-links" id="calendar-dialog-links"></ul>
+      <form method="dialog">
+        <button type="submit" class="calendar-dialog-close">Close</button>
+      </form>
+    </div>
+  </dialog>
+
+  <script>
+    (function () {
+      var dialog = document.getElementById('calendar-day-dialog');
+      var dateEl = document.getElementById('calendar-dialog-date');
+      var linksEl = document.getElementById('calendar-dialog-links');
+      if (!dialog || !dateEl || !linksEl) return;
+
+      document.querySelectorAll('.calendar-cell--multi').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var entries = [];
+          try {
+            entries = JSON.parse(btn.getAttribute('data-entries') || '[]');
+          } catch (e) {}
+          var dateStr = btn.getAttribute('data-date') || '';
+          if (dateStr.length >= 10) {
+            var y = dateStr.slice(0, 4), m = dateStr.slice(5, 7), d = dateStr.slice(8, 10);
+            dateEl.textContent = [y, m, d].join('-');
+          } else {
+            dateEl.textContent = dateStr;
+          }
+          linksEl.innerHTML = '';
+          entries.forEach(function (e) {
+            var li = document.createElement('li');
+            var a = document.createElement('a');
+            a.href = e.url;
+            a.textContent = e.label || 'Entry';
+            li.appendChild(a);
+            linksEl.appendChild(li);
+          });
+          dialog.showModal();
+        });
+      });
+
+      dialog.addEventListener('close', function () {
+        linksEl.innerHTML = '';
+      });
+    })();
+  </script>
+{% endblock %}
