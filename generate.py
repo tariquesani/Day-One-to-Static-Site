@@ -1,6 +1,7 @@
 """Orchestrate generation of the Day One static archive."""
 
 import json
+import sys
 from pathlib import Path
 
 from generator import create_or_update, pick_zip_path, unzip_to_folder, write_entry_jsons
@@ -101,7 +102,11 @@ def main():
             print(f"Neighbor entries rewritten: {len(neighbor_rewrites)}")
 
             # Regenerate HTML for imported entries and any entries whose neighbors changed.
-            for date_key in sorted(regen_keys):
+            regen_keys_sorted = sorted(regen_keys)
+            total_entries = len(regen_keys_sorted)
+            bar_width = 40
+
+            for idx, date_key in enumerate(regen_keys_sorted, start=1):
                 entry_json_dir = output_dir_for_date_key(entries_dir, date_key)
                 entry_json_path = entry_json_dir / f"{date_key}.json"
                 if not entry_json_path.exists():
@@ -117,6 +122,17 @@ def main():
                     entries_dir=entries_dir,
                     manifest_path=manifest_path,
                 )
+
+                # Simple terminal progress bar for entry HTML generation (similar to utils/generate_again.py)
+                if total_entries:
+                    progress = idx / total_entries
+                    filled = int(bar_width * progress)
+                    bar = "#" * filled + "-" * (bar_width - filled)
+                    sys.stdout.write(f"\rEntries: [{bar}] {idx}/{total_entries}")
+                    sys.stdout.flush()
+
+            if total_entries:
+                sys.stdout.write("\n")
 
             # Keep index.html fresh without regenerating all entry pages.
             archive_root = entries_dir.parent
