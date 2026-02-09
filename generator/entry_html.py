@@ -42,6 +42,9 @@ def _template_context(
     prev_url: str | None,
     next_url: str | None,
     index_url: str,
+    calendar_url: str,
+    media_url: str,
+    map_url: str,
 ) -> dict:
     """Build the Jinja template context for an entry."""
     creation_date = entry.get("creationDate", "")
@@ -71,6 +74,9 @@ def _template_context(
         "prev_url": prev_url,
         "next_url": next_url,
         "index_url": index_url,
+        "calendar_url": calendar_url,
+        "media_url": media_url,
+        "map_url": map_url,
         "css_path": "../../../assets/css/",
     }
 
@@ -157,8 +163,11 @@ def generate_entry_html(
     prev_url, next_url = _prev_next_urls(date_key, manifest_entries, output_dir, entries_dir)
     archive_root = entries_dir.parent
     index_url = os.path.relpath(archive_root / "index.html", output_dir).replace("\\", "/")
+    calendar_url = os.path.relpath(archive_root / "calendar.html", output_dir).replace("\\", "/")
+    media_url = os.path.relpath(archive_root / "media.html", output_dir).replace("\\", "/")
+    map_url = os.path.relpath(archive_root / "map.html", output_dir).replace("\\", "/")
 
-    context = _template_context(entry, date_key, body_html, prev_url, next_url, index_url)
+    context = _template_context(entry, date_key, body_html, prev_url, next_url, index_url, calendar_url, media_url, map_url)
 
     templates_dir = Path(__file__).resolve().parent / "templates"
     env = Environment(loader=FileSystemLoader(templates_dir))
