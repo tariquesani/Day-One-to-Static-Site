@@ -9,7 +9,8 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
-from generator.entry_html import _load_manifest_full, _year_range_from_manifest
+from generator.entry_html import _load_manifest_full
+from generator.index_html import _year_range_from_manifest
 from generator.text_to_html import get_first_photo_filename
 
 
