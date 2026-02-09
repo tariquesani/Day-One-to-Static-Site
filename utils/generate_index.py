@@ -11,7 +11,7 @@ _project_root = Path(__file__).resolve().parent.parent
 if str(_project_root) not in sys.path:
     sys.path.insert(0, str(_project_root))
 
-from generator.entry_html import generate_index_html  # type: ignore  # noqa: E402
+from generator.index_html import generate_index_html  # type: ignore  # noqa: E402
 
 
 def _pick_import_dir(imports_base: Path) -> Path | None:

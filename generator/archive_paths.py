@@ -1,5 +1,6 @@
 """Shared date parsing and archive path logic for Day One entries."""
 
+import json
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -70,3 +71,28 @@ def output_dir_for_date_key(archive_entries_dir: Path, date_key: str) -> Path:
     parts = date_part.split("-")
     year, month = (parts[0], parts[1]) if len(parts) >= 2 else ("0000", "00")
     return archive_entries_dir / year / month
+
+
+def prev_next_map(manifest_path: Path) -> dict[str, tuple[str | None, str | None]]:
+    """Return a mapping of date_key -> (prev_key, next_key) from a manifest."""
+    if not manifest_path.exists():
+        return {}
+
+    with open(manifest_path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    entries = data.get("entries", [])
+    # Row format: [uuid, date_key, html_path, creation_date] or legacy [date_key, html_path, creation_date]
+    keys: list[str] = [
+        row[1] if len(row) >= 4 else row[0]
+        for row in entries
+        if isinstance(row, list) and row
+    ]
+
+    prev_next: dict[str, tuple[str | None, str | None]] = {}
+    for i, key in enumerate(keys):
+        prev_key = keys[i - 1] if i > 0 else None
+        next_key = keys[i + 1] if i + 1 < len(keys) else None
+        prev_next[key] = (prev_key, next_key)
+
+    return prev_next

@@ -11,9 +11,10 @@ if str(_project_root) not in sys.path:
     sys.path.insert(0, str(_project_root))
 
 from generator import create_or_update, write_entry_jsons
-from generator.archive_paths import assign_date_keys
+from generator.archive_paths import assign_date_keys, output_dir_for_date_key, prev_next_map
 from generator.calendar_html import generate_calendar_html
-from generator.entry_html import generate_entry_html, generate_index_html
+from generator.entry_html import generate_entry_html
+from generator.index_html import generate_index_html
 
 
 def _discover_imports(imports_base: Path) -> list[tuple[Path, Path]]:
@@ -49,27 +50,6 @@ def _date_key_to_import_dir(
     return pairs, date_key_to_dir
 
 
-def _prev_next_map(manifest_path: Path) -> dict[str, tuple[str | None, str | None]]:
-    """Return a mapping of date_key -> (prev_key, next_key) from a manifest."""
-    if not manifest_path.exists():
-        return {}
-    with open(manifest_path, encoding="utf-8") as f:
-        data = json.load(f)
-    entries = data.get("entries", [])
-    # Row format: [uuid, date_key, html_path, creation_date] or legacy [date_key, html_path, creation_date]
-    keys: list[str] = [
-        row[1] if len(row) >= 4 else row[0]
-        for row in entries
-        if isinstance(row, list) and row
-    ]
-    prev_next: dict[str, tuple[str | None, str | None]] = {}
-    for i, key in enumerate(keys):
-        prev_key = keys[i - 1] if i > 0 else None
-        next_key = keys[i + 1] if i + 1 < len(keys) else None
-        prev_next[key] = (prev_key, next_key)
-    return prev_next
-
-
 def main() -> None:
     total_start = time.perf_counter()
 
@@ -91,7 +71,7 @@ def main() -> None:
         print(f"  Merged: {import_dir.name}")
 
     # Regenerate HTML for every entry in the manifest
-    prev_next = _prev_next_map(manifest_path)
+    prev_next = prev_next_map(manifest_path)
     manifest_entries = list(prev_next.keys())
 
     entries_html_start = time.perf_counter()
@@ -99,10 +79,8 @@ def main() -> None:
     bar_width = 40
 
     for idx, date_key in enumerate(manifest_entries, start=1):
-        date_part = date_key.split("_")[0]
-        parts = date_part.split("-")
-        year, month = (parts[0], parts[1]) if len(parts) >= 2 else ("0000", "00")
-        entry_json_path = entries_dir / year / month / f"{date_key}.json"
+        entry_json_dir = output_dir_for_date_key(entries_dir, date_key)
+        entry_json_path = entry_json_dir / f"{date_key}.json"
         if not entry_json_path.exists():
             continue
         # Use the import dir this entry came from; fallback to archive photos dir if unknown

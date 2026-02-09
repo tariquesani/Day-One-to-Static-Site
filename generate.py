@@ -4,33 +4,9 @@ import json
 from pathlib import Path
 
 from generator import create_or_update, pick_zip_path, unzip_to_folder, write_entry_jsons
-from generator.archive_paths import assign_date_keys
-from generator.entry_html import generate_entry_html, generate_index_html
-
-
-def _prev_next_map(manifest_path: Path) -> dict[str, tuple[str | None, str | None]]:
-    """Return a mapping of date_key -> (prev_key, next_key) from a manifest."""
-    if not manifest_path.exists():
-        return {}
-
-    with open(manifest_path, encoding="utf-8") as f:
-        data = json.load(f)
-
-    entries = data.get("entries", [])
-    # Row format: [uuid, date_key, html_path, creation_date] or legacy [date_key, html_path, creation_date]
-    keys: list[str] = [
-        row[1] if len(row) >= 4 else row[0]
-        for row in entries
-        if isinstance(row, list) and row
-    ]
-
-    prev_next: dict[str, tuple[str | None, str | None]] = {}
-    for i, key in enumerate(keys):
-        prev_key = keys[i - 1] if i > 0 else None
-        next_key = keys[i + 1] if i + 1 < len(keys) else None
-        prev_next[key] = (prev_key, next_key)
-
-    return prev_next
+from generator.archive_paths import assign_date_keys, output_dir_for_date_key, prev_next_map
+from generator.entry_html import generate_entry_html
+from generator.index_html import generate_index_html
 
 
 def main():
@@ -49,7 +25,7 @@ def main():
             manifest_path = entries_dir / "manifest.json"
 
             # Capture neighbor relationships before updating the manifest.
-            old_prev_next = _prev_next_map(manifest_path)
+            old_prev_next = prev_next_map(manifest_path)
 
             create_or_update(dayone_json, manifest_path)
             write_entry_jsons(dayone_json, entries_dir)
@@ -62,7 +38,7 @@ def main():
             imported_date_keys = [date_key for date_key, _ in assign_date_keys(entries_sorted)]
 
             # Determine which entries' neighbor relationships changed.
-            new_prev_next = _prev_next_map(manifest_path)
+            new_prev_next = prev_next_map(manifest_path)
             regen_keys: set[str] = set(imported_date_keys)
 
             for date_key, (new_prev, new_next) in new_prev_next.items():
@@ -79,10 +55,8 @@ def main():
 
             # Regenerate HTML for imported entries and any entries whose neighbors changed.
             for date_key in sorted(regen_keys):
-                date_part = date_key.split("_")[0]
-                parts = date_part.split("-")
-                year, month = (parts[0], parts[1]) if len(parts) >= 2 else ("0000", "00")
-                entry_json_path = entries_dir / year / month / f"{date_key}.json"
+                entry_json_dir = output_dir_for_date_key(entries_dir, date_key)
+                entry_json_path = entry_json_dir / f"{date_key}.json"
                 if not entry_json_path.exists():
                     continue
                 # For entries from this import, use the current unzip folder as the photo source.
