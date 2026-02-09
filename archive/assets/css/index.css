@@ -244,21 +244,22 @@ body.hero-out .month h2 {
   font-weight: 600;
 }
 
-.entry-row .entry-meta {
+.entry-row .entry-content {
   min-width: 0;
 }
 
-.entry-row .entry-title {
+.entry-row .entry-preview {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: clamp(0.95rem, 2.5vw, 1.05rem);
   line-height: 1.35;
+  text-wrap: balance;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   overflow: hidden;
 }
 
-.entry-row .entry-sub {
+.entry-row .entry-meta {
   margin: 0.25rem 0 0;
   font-size: 0.75rem;
   color: var(--muted);

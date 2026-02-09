@@ -58,9 +58,9 @@ def _format_month_title(year_month: str) -> str:
         return year_month
 
 
-def _index_snippet(entry: dict, max_len: int = 80) -> str:
+def _index_snippet(entry: dict, max_len: int = 160) -> str:
     """
-    Build a short snippet for the index from the first one or two
+    Build a short snippet for the index from the first few
     non-empty, non-image lines of the entry text, up to max_len.
     Also strips simple Markdown-style backslash escapes so that
     sequences like '\\.' render as '.'.
@@ -102,8 +102,8 @@ def _index_snippet(entry: dict, max_len: int = 80) -> str:
     if not lines:
         return ""
 
-    # Combine the first one or two lines, then truncate to max_len.
-    snippet = " ".join(lines[:2]).strip()
+    # Combine the first up-to-three lines, then truncate to max_len.
+    snippet = " ".join(lines[:3]).strip()
 
     if len(snippet) <= max_len:
         return snippet

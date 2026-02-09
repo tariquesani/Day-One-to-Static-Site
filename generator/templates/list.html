@@ -11,9 +11,9 @@
           <span class="dow">{{ row.dow }}</span>
           <span class="day">{{ row.day }}</span>
         </time>
-        <div class="entry-meta">
-          <p class="entry-title">{{ row.snippet }}</p>
-          <p class="entry-sub">{{ row.meta_line }}</p>
+        <div class="entry-content">
+          <p class="entry-preview">{{ row.snippet }}</p>
+          <div class="entry-meta">{{ row.meta_line }}</div>
         </div>
         {% if row.thumbnail_url %}
         <img class="entry-thumb" src="{{ row.thumbnail_url }}" alt="" width="56" height="56" loading="lazy">
