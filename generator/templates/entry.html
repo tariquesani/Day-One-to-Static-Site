@@ -53,7 +53,12 @@
         {% if prev_url and next_url %} · {% endif %}
         {% if next_url %}<a href="{{ next_url }}" rel="next">Next</a>{% endif %}
       </span>
-      <a href="{{ index_url }}" class="entry-nav-index">List</a>
+      <span class="entry-nav-links">
+        <a href="{{ index_url }}" class="entry-nav-index">List</a> · 
+        <a href="{{ calendar_url }}" class="entry-nav-calendar">Calendar</a> · 
+        <a href="{{ media_url }}" class="entry-nav-media">Media</a> · 
+        <a href="{{ map_url }}" class="entry-nav-map">Map</a>
+      </span>
     </nav>
   </main>
 </body>
