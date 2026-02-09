@@ -12,6 +12,7 @@ if str(_project_root) not in sys.path:
 
 from generator import create_or_update, write_entry_jsons
 from generator.archive_paths import assign_date_keys
+from generator.calendar_html import generate_calendar_html
 from generator.entry_html import generate_entry_html, generate_index_html
 
 
@@ -55,7 +56,12 @@ def _prev_next_map(manifest_path: Path) -> dict[str, tuple[str | None, str | Non
     with open(manifest_path, encoding="utf-8") as f:
         data = json.load(f)
     entries = data.get("entries", [])
-    keys: list[str] = [row[0] for row in entries if isinstance(row, list) and row]
+    # Row format: [uuid, date_key, html_path, creation_date] or legacy [date_key, html_path, creation_date]
+    keys: list[str] = [
+        row[1] if len(row) >= 4 else row[0]
+        for row in entries
+        if isinstance(row, list) and row
+    ]
     prev_next: dict[str, tuple[str | None, str | None]] = {}
     for i, key in enumerate(keys):
         prev_key = keys[i - 1] if i > 0 else None
@@ -127,6 +133,8 @@ def main() -> None:
     index_html_start = time.perf_counter()
     generate_index_html(first_import_dir, archive_root, entries_dir, manifest_path)
     index_html_end = time.perf_counter()
+
+    generate_calendar_html(first_import_dir, archive_root, entries_dir, manifest_path)
 
     total_end = time.perf_counter()
 

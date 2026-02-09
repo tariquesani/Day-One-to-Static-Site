@@ -17,7 +17,12 @@ def _prev_next_map(manifest_path: Path) -> dict[str, tuple[str | None, str | Non
         data = json.load(f)
 
     entries = data.get("entries", [])
-    keys: list[str] = [row[0] for row in entries if isinstance(row, list) and row]
+    # Row format: [uuid, date_key, html_path, creation_date] or legacy [date_key, html_path, creation_date]
+    keys: list[str] = [
+        row[1] if len(row) >= 4 else row[0]
+        for row in entries
+        if isinstance(row, list) and row
+    ]
 
     prev_next: dict[str, tuple[str | None, str | None]] = {}
     for i, key in enumerate(keys):

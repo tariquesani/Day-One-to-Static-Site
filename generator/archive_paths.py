@@ -1,12 +1,39 @@
 """Shared date parsing and archive path logic for Day One entries."""
 
 from collections import defaultdict
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 
 def parse_date(date_str: str) -> str:
-    """Extract YYYY-MM-DD from ISO 8601 date string."""
+    """Extract YYYY-MM-DD from ISO 8601 date string (UTC)."""
     return date_str[:10] if date_str else ""
+
+
+def _creation_date_local_yyyy_mm_dd(creation_date: str, timezone_name: str | None) -> str:
+    """
+    Return YYYY-MM-DD for the entry's creation moment in the given timezone.
+    If timezone_name is None or invalid, returns the UTC date (parse_date).
+    """
+    if not creation_date:
+        return ""
+    if not timezone_name:
+        return parse_date(creation_date)
+    try:
+        dt = datetime.fromisoformat(creation_date.replace("Z", "+00:00"))
+        if not dt.tzinfo:
+            dt = dt.replace(tzinfo=ZoneInfo("UTC"))
+        try:
+            tz = ZoneInfo(timezone_name)
+        except Exception:
+            # Invalid timezone name, fall back to UTC
+            return parse_date(creation_date)
+        local = dt.astimezone(tz)
+        return local.strftime("%Y-%m-%d")
+    except Exception:
+        # Any error in parsing/conversion, fall back to UTC
+        return parse_date(creation_date)
 
 
 def assign_date_keys(entries_sorted: list[dict]) -> list[tuple[str, dict]]:
@@ -16,7 +43,8 @@ def assign_date_keys(entries_sorted: list[dict]) -> list[tuple[str, dict]]:
 
     for entry in entries_sorted:
         creation_date = entry.get("creationDate", "")
-        date_part = parse_date(creation_date)
+        tz_name = (entry.get("location") or {}).get("timeZoneName")
+        date_part = _creation_date_local_yyyy_mm_dd(creation_date, tz_name)
         count = counts[date_part]
         counts[date_part] += 1
 

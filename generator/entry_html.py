@@ -5,6 +5,7 @@ import os
 import re
 from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -83,8 +84,14 @@ def _load_manifest(manifest_path: Path) -> list[tuple[str, str]]:
     with open(manifest_path, encoding="utf-8") as f:
         data = json.load(f)
     entries = data.get("entries", [])
-    # Manifest format: [date_key, html_path, creation_date]
-    return [(row[0], row[1]) for row in entries if len(row) >= 2]
+    # Manifest format: [uuid, date_key, html_path, creation_date] or legacy [date_key, html_path, creation_date]
+    result = []
+    for row in entries:
+        if len(row) >= 4:
+            result.append((row[1], row[2]))
+        elif len(row) >= 2:
+            result.append((row[0], row[1]))
+    return result
 
 
 def _load_manifest_full(manifest_path: Path) -> list[tuple[str, str, str]]:
@@ -96,7 +103,9 @@ def _load_manifest_full(manifest_path: Path) -> list[tuple[str, str, str]]:
     entries = data.get("entries", [])
     result = []
     for row in entries:
-        if len(row) >= 3:
+        if len(row) >= 4:
+            result.append((row[1], row[2], row[3]))
+        elif len(row) >= 3:
             result.append((row[0], row[1], row[2]))
         elif len(row) >= 2:
             result.append((row[0], row[1], row[0]))
@@ -339,20 +348,37 @@ def generate_index_html(
         # Photos dir is inferred from this entry's location (same as its html/json).
         photos_dir = entry_json_path.parent / "photos"
         first_photo = get_first_photo_filename(entry, import_dir, photos_dir)
+
         creation = entry.get("creationDate", "")
-        try:
-            dt = datetime.fromisoformat(creation.replace("Z", "+00:00"))
-            dow = dt.strftime("%a")
-            day = dt.strftime("%d")
-        except (ValueError, TypeError):
-            dow = ""
-            day = creation[:10] if creation else ""
+        dow = ""
+        day = ""
+        date_iso = ""
+        if creation:
+            tz_name = ((entry.get("location") or {}).get("timeZoneName")
+                       or entry.get("timeZone"))
+            try:
+                dt = datetime.fromisoformat(creation.replace("Z", "+00:00"))
+                # Treat stored creationDate as UTC, then convert to entry's timezone if known.
+                try:
+                    dt = dt.replace(tzinfo=ZoneInfo("UTC"))
+                    if tz_name:
+                        dt = dt.astimezone(ZoneInfo(tz_name))
+                except Exception:
+                    # If timezone lookup fails, fall back to naive/UTC interpretation.
+                    pass
+                dow = dt.strftime("%a")
+                day = dt.strftime("%d")
+                date_iso = dt.strftime("%Y-%m-%d")
+            except (ValueError, TypeError):
+                day = creation[:10] if creation else ""
+                date_iso = creation[:10] if creation else ""
+        row_date_iso = date_iso or (creation[:10] if creation else "")
         entry_url = f"entries/{html_path}"
         thumbnail_url = None
         if first_photo:
             thumbnail_url = f"entries/{year}/{month}/photos/{first_photo}"
         row = {
-            "date_iso": creation[:10] if creation else "",
+            "date_iso": row_date_iso,
             "dow": dow,
             "day": day,
             "snippet": _index_snippet(entry),
