@@ -9,6 +9,49 @@ from generator.entry_html import generate_entry_html
 from generator.index_html import generate_index_html
 
 
+def _normalize_import_json_place_names(dayone_json: Path) -> None:
+    """
+    Normalize known place name spellings directly in the imported Day One JSON.
+
+    Currently:
+    - If location.placeName is exactly "Sanis", change it to "SANI's".
+    """
+    if not dayone_json.exists():
+        return
+
+    with open(dayone_json, encoding="utf-8") as f:
+        data = json.load(f)
+
+    entries = data.get("entries", [])
+    changed = False
+
+    for entry in entries:
+        # Normalize entry-level location
+        loc = entry.get("location")
+        if isinstance(loc, dict):
+            place_name = (loc.get("placeName") or "").strip()
+            if place_name == "Sanis":
+                loc["placeName"] = "SANI's"
+                changed = True
+
+        # Normalize per-photo locations (captions use photo.location first)
+        photos = entry.get("photos") or []
+        for photo in photos:
+            photo_loc = photo.get("location")
+            if not isinstance(photo_loc, dict):
+                continue
+            p_name = (photo_loc.get("placeName") or "").strip()
+            if p_name == "Sanis":
+                photo_loc["placeName"] = "SANI's"
+                changed = True
+
+    if not changed:
+        return
+
+    with open(dayone_json, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+
 def main():
     path = pick_zip_path()
     if path:
@@ -21,6 +64,10 @@ def main():
         dayone_jsons = list(import_dir.glob("*.json"))
         if dayone_jsons:
             dayone_json = dayone_jsons[0]
+            # Normalize any known place name spelling quirks directly in the import JSON
+            # so all downstream processing (manifest, per-entry JSON, HTML) sees the
+            # corrected value.
+            _normalize_import_json_place_names(dayone_json)
             entries_dir = project_root / "archive" / "entries"
             manifest_path = entries_dir / "manifest.json"
 

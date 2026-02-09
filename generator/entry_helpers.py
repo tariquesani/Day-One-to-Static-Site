@@ -61,8 +61,6 @@ def get_place_name(entry: dict) -> str:
     if "location" not in entry or "placeName" not in entry["location"]:
         return ""
     name = entry["location"]["placeName"] or ""
-    if name == "Sanis":
-        return "SANI's"
     return name
 
 

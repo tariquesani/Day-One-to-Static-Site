@@ -105,13 +105,6 @@ def _index_snippet(entry: dict, max_len: int = 80) -> str:
     # Combine the first one or two lines, then truncate to max_len.
     snippet = " ".join(lines[:2]).strip()
 
-    # Special exception: normalize this specific place name spelling in snippets.
-    # If the entry's placeName is "Sanis", show it as "SANI's" instead.
-    loc = entry.get("location") or {}
-    place_name = (loc.get("placeName") or "").strip()
-    if place_name == "Sanis":
-        snippet = snippet.replace("Sanis", "SANI's")
-
     if len(snippet) <= max_len:
         return snippet
     return snippet[: max_len - 1].rstrip() + "…"
@@ -132,10 +125,6 @@ def _index_meta_line(entry: dict) -> str:
             parts.append(t)
     loc = entry_helpers.get_location(entry)
     if loc:
-        # Special exception: normalize this specific place name spelling.
-        # If the placeName is "Sanis", show it as "SANI's" instead.
-        if "Sanis" in loc:
-            loc = loc.replace("Sanis", "SANI's")
         parts.append(loc)
     weather = entry_helpers.get_weather(entry)
     if weather:
