@@ -55,6 +55,11 @@ def _template_context(
     latitude = str(loc["latitude"]) if "latitude" in loc else ""
     longitude = str(loc["longitude"]) if "longitude" in loc else ""
 
+    date_part = date_key.split("_")[0]
+    mm_dd = date_part[5:10] if len(date_part) >= 10 else ""
+    # Entry is at entries/YYYY/MM/ — two levels up to entries/, then on-this-day/
+    otd_url = f"../../on-this-day/{mm_dd}.html" if mm_dd else None
+
     return {
         "title": title,
         "creation_date_iso": creation_date,
@@ -77,6 +82,7 @@ def _template_context(
         "calendar_url": calendar_url,
         "media_url": media_url,
         "map_url": map_url,
+        "otd_url": otd_url,
         "css_path": "../../../assets/css/",
     }
 

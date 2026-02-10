@@ -41,57 +41,70 @@
       text-decoration: none;
     }
     .entry-nav-menu a:hover { background: rgba(0,0,0,0.06); }
+    .otd-year { margin-top: 2em; }
+    .otd-year:first-of-type { margin-top: 0; }
+    .otd-year h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.5em; opacity: 0.85; }
   </style>
 </head>
 <body>
   <main>
-    <article class="entry" aria-labelledby="entry-title">
+    <h1 id="otd-title">On {{ day_label }}</h1>
 
-      <h1 id="entry-title">
-        <time datetime="{{ creation_date_iso }}">
-          {{ creation_date_formatted }}{% if creation_time_formatted %} <span class="entry-time">{{ creation_time_formatted }}</span>{% endif %}
+    {% if years_entries %}
+      {% for year, entries in years_entries %}
+    <section class="otd-year" aria-labelledby="year-{{ year }}">
+      <h2 id="year-{{ year }}">{{ year }}</h2>
+      {% for entry in entries %}
+    <article class="entry" aria-labelledby="entry-title-{{ year }}-{{ loop.index }}">
+      <h3 id="entry-title-{{ year }}-{{ loop.index }}" class="entry-heading">
+        <time datetime="{{ entry.creation_date_iso }}">
+          {{ entry.creation_date_formatted }}{% if entry.creation_time_formatted %} <span class="entry-time">{{ entry.creation_time_formatted }}</span>{% endif %}
         </time>
-      </h1>
+      </h3>
 
-      {% if location %}
+      {% if entry.location %}
       <p class="entry-meta">
           <span class="location h-geo">
-            {% if place_name %}<span class="p-name">{{ place_name }}</span>{% if locality_name or country %}, {% endif %}{% endif %}
-            {% if locality_name %}<span class="p-locality">{{ locality_name }}</span>{% if country %}, {% endif %}{% endif %}
-            {% if country %}<span class="p-country-name">{{ country }}</span>{% endif %}
-            {% if latitude and longitude %}
-            <data class="p-latitude" value="{{ latitude }}"></data>
-            <data class="p-longitude" value="{{ longitude }}"></data>
+            {% if entry.place_name %}<span class="p-name">{{ entry.place_name }}</span>{% if entry.locality_name or entry.country %}, {% endif %}{% endif %}
+            {% if entry.locality_name %}<span class="p-locality">{{ entry.locality_name }}</span>{% if entry.country %}, {% endif %}{% endif %}
+            {% if entry.country %}<span class="p-country-name">{{ entry.country }}</span>{% endif %}
+            {% if entry.latitude and entry.longitude %}
+            <data class="p-latitude" value="{{ entry.latitude }}"></data>
+            <data class="p-longitude" value="{{ entry.longitude }}"></data>
             {% endif %}
           </span>
         </p>
       {% endif %}
 
       <section class="entry-body">
-        {{ body_html | safe }}
+        {{ entry.body_html | safe }}
       </section>
 
-      {% if weather or moon_phase %}
+      {% if entry.weather or entry.moon_phase %}
       <footer class="entry-footer">
         <p class="entry-context">
-          {% if weather %}<span class="weather">{% if weather_emoji %}{{ weather_emoji }} {% endif %}{{ weather }}</span>{% endif %}
-          {% if weather and moon_phase %}<span class="context-sep">·</span>{% endif %}
-          {% if moon_phase %}<span class="moon">{% if moon_emoji %}{{ moon_emoji }} {% endif %}{{ moon_phase }}</span>{% endif %}
+          {% if entry.weather %}<span class="weather">{% if entry.weather_emoji %}{{ entry.weather_emoji }} {% endif %}{{ entry.weather }}</span>{% endif %}
+          {% if entry.weather and entry.moon_phase %}<span class="context-sep">·</span>{% endif %}
+          {% if entry.moon_phase %}<span class="moon">{% if entry.moon_emoji %}{{ entry.moon_emoji }} {% endif %}{{ entry.moon_phase }}</span>{% endif %}
         </p>
       </footer>
       {% endif %}
 
     </article>
+      {% endfor %}
+    </section>
+      {% endfor %}
+    {% else %}
+    <p class="otd-empty">No entries on this day.</p>
+    {% endif %}
 
-    <nav class="entry-nav" aria-label="Entry navigation">
+    <nav class="entry-nav" aria-label="On this day navigation">
       <span class="entry-nav-prev-next">
-        {% if prev_url %}<a href="{{ prev_url }}" rel="prev">Previous</a>{% endif %}
-        {% if prev_url and next_url %} · {% endif %}
-        {% if next_url %}<a href="{{ next_url }}" rel="next">Next</a>{% endif %}
+        <a href="{{ prev_url }}" rel="prev">On {{ prev_label }}</a> ·
+        <a href="{{ next_url }}" rel="next">On {{ next_label }}</a>
       </span>
       <span class="entry-nav-links">
         <span class="entry-nav-inline">
-          {% if otd_url %}<a href="{{ otd_url }}" class="entry-nav-otd">On this day</a> · {% endif %}
           <a href="{{ index_url }}" class="entry-nav-index">List</a> ·
           <a href="{{ calendar_url }}" class="entry-nav-calendar">Calendar</a> ·
           <a href="{{ media_url }}" class="entry-nav-media">Media</a> ·
@@ -100,7 +113,6 @@
         <span class="entry-nav-popup-wrapper" aria-hidden="true">
           <button type="button" class="entry-nav-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="entry-nav-menu">Menu</button>
           <div id="entry-nav-menu" class="entry-nav-menu" role="menu" hidden>
-            {% if otd_url %}<a href="{{ otd_url }}" role="menuitem">On this day</a>{% endif %}
             <a href="{{ index_url }}" role="menuitem">List</a>
             <a href="{{ calendar_url }}" role="menuitem">Calendar</a>
             <a href="{{ media_url }}" role="menuitem">Media</a>

@@ -15,6 +15,7 @@ from generator.archive_paths import assign_date_keys, output_dir_for_date_key, p
 from generator.calendar_html import generate_calendar_html
 from generator.entry_html import generate_entry_html
 from generator.index_html import generate_index_html
+from generator.otd_html import generate_otd_pages
 
 
 def _discover_imports(imports_base: Path) -> list[tuple[Path, Path]]:
@@ -114,6 +115,10 @@ def main() -> None:
 
     generate_calendar_html(first_import_dir, archive_root, entries_dir, manifest_path)
 
+    otd_start = time.perf_counter()
+    generate_otd_pages(entries_dir)
+    otd_end = time.perf_counter()
+
     total_end = time.perf_counter()
 
     # Simple stats
@@ -128,6 +133,7 @@ def main() -> None:
     print(f"  Neighbour links (prev+next): {neighbour_links}")
     print(f"  Time for entry HTML: {index_html_start - entries_html_start:.2f}s")
     print(f"  Time for index.html: {index_html_end - index_html_start:.2f}s")
+    print(f"  Time for OTD: {otd_end - otd_start:.2f}s")
     print(f"  Total time: {total_end - total_start:.2f}s")
 
 
