@@ -6,6 +6,42 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="{{ css_path }}sakura.css">
   <link rel="stylesheet" href="{{ css_path }}site.css">
+  <style>
+    .entry-nav-popup-wrapper { display: none; position: relative; }
+    .js-enabled .entry-nav-inline { display: none; }
+    .js-enabled .entry-nav-popup-wrapper { display: inline-block; }
+    .entry-nav-trigger {
+      background: transparent;
+      border: 1px solid currentColor;
+      border-radius: 4px;
+      color: inherit;
+      cursor: pointer;
+      font: inherit;
+      padding: 0.25em 0.6em;
+    }
+    .entry-nav .entry-nav-trigger:hover { color: #0288d1; background: rgba(2, 136, 209, 0.15); }
+    .entry-nav-menu {
+      position: absolute;
+      bottom: 100%;
+      right: 0;
+      margin-bottom: 0.25em;
+      min-width: 8em;
+      padding: 0.5em 0;
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 10;
+    }
+    .entry-nav-menu[hidden] { display: none; }
+    .entry-nav-menu a {
+      display: block;
+      padding: 0.4em 1em;
+      color: inherit;
+      text-decoration: none;
+    }
+    .entry-nav-menu a:hover { background: rgba(0,0,0,0.06); }
+  </style>
 </head>
 <body>
   <main>
@@ -54,12 +90,58 @@
         {% if next_url %}<a href="{{ next_url }}" rel="next">Next</a>{% endif %}
       </span>
       <span class="entry-nav-links">
-        <a href="{{ index_url }}" class="entry-nav-index">List</a> · 
-        <a href="{{ calendar_url }}" class="entry-nav-calendar">Calendar</a> · 
-        <a href="{{ media_url }}" class="entry-nav-media">Media</a> · 
-        <a href="{{ map_url }}" class="entry-nav-map">Map</a>
+        <span class="entry-nav-inline">
+          <a href="{{ index_url }}" class="entry-nav-index">List</a> ·
+          <a href="{{ calendar_url }}" class="entry-nav-calendar">Calendar</a> ·
+          <a href="{{ media_url }}" class="entry-nav-media">Media</a> ·
+          <a href="{{ map_url }}" class="entry-nav-map">Map</a>
+        </span>
+        <span class="entry-nav-popup-wrapper" aria-hidden="true">
+          <button type="button" class="entry-nav-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="entry-nav-menu">Menu</button>
+          <div id="entry-nav-menu" class="entry-nav-menu" role="menu" hidden>
+            <a href="{{ index_url }}" role="menuitem">List</a>
+            <a href="{{ calendar_url }}" role="menuitem">Calendar</a>
+            <a href="{{ media_url }}" role="menuitem">Media</a>
+            <a href="{{ map_url }}" role="menuitem">Map</a>
+          </div>
+        </span>
       </span>
     </nav>
   </main>
+  <script>
+    (function() {
+      document.body.classList.add('js-enabled');
+      var trigger = document.querySelector('.entry-nav-trigger');
+      var menu = document.getElementById('entry-nav-menu');
+      var wrapper = document.querySelector('.entry-nav-popup-wrapper');
+      if (!trigger || !menu || !wrapper) return;
+
+      function open() {
+        menu.hidden = false;
+        trigger.setAttribute('aria-expanded', 'true');
+        wrapper.removeAttribute('aria-hidden');
+        document.addEventListener('click', closeOnOutside);
+        document.addEventListener('keydown', closeOnEscape);
+      }
+      function close() {
+        menu.hidden = true;
+        trigger.setAttribute('aria-expanded', 'false');
+        wrapper.setAttribute('aria-hidden', 'true');
+        document.removeEventListener('click', closeOnOutside);
+        document.removeEventListener('keydown', closeOnEscape);
+      }
+      function closeOnOutside(e) {
+        if (!wrapper.contains(e.target)) close();
+      }
+      function closeOnEscape(e) {
+        if (e.key === 'Escape') close();
+      }
+
+      trigger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (menu.hidden) open(); else close();
+      });
+    })();
+  </script>
 </body>
 </html>
