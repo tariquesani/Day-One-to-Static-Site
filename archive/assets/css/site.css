@@ -81,3 +81,92 @@
   font-size: 0.9em;
   color: #666;
 }
+
+/* Lightbox overlay: fixed, centered on viewport (entry + any page with nav.js) */
+.photo-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+.photo-lightbox.is-open {
+  display: flex;
+}
+
+.photo-lightbox-dialog {
+  position: relative;
+  max-width: 100vw;
+  max-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.photo-lightbox-img-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photo-lightbox-img {
+  max-width: 100vw;
+  max-height: calc(100vh - 5rem); /* leave room for controls + caption */
+  object-fit: contain;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.photo-lightbox-meta {
+  margin-top: 0.5rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #f0f0f0;
+}
+
+.photo-lightbox-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1.1rem;
+  border-radius: 6px;
+}
+
+.photo-lightbox-nav {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.photo-lightbox-prev,
+.photo-lightbox-next {
+  padding: 0.35rem 0.6rem;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.95rem;
+  border-radius: 6px;
+}
+
+.photo-lightbox-close:focus,
+.photo-lightbox-prev:focus,
+.photo-lightbox-next:focus {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}

@@ -13,6 +13,7 @@ if str(_project_root) not in sys.path:
 from generator import create_or_update, write_entry_jsons
 from generator.archive_paths import assign_date_keys, output_dir_for_date_key, prev_next_map
 from generator.calendar_html import generate_calendar_html
+from generator.media_html import generate_media_html
 from generator.entry_html import generate_entry_html
 from generator.index_html import generate_index_html
 from generator.otd_html import generate_otd_pages
@@ -114,6 +115,12 @@ def main() -> None:
     index_html_end = time.perf_counter()
 
     generate_calendar_html(first_import_dir, archive_root, entries_dir, manifest_path)
+
+    generate_media_html(
+        archive_root=archive_root,
+        entries_dir=entries_dir,
+        manifest_path=manifest_path,
+    )
 
     otd_start = time.perf_counter()
     generate_otd_pages(entries_dir)

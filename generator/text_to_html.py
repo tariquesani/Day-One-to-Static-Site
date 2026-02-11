@@ -193,9 +193,11 @@ def entry_text_to_html(
             f"<figcaption>{html.escape(caption)}</figcaption>" if caption else ""
         )
 
+        identifier_attr = html.escape(identifier, quote=True)
+
         figure_html = (
-            f'<figure class="entry-photo">'
-            f'<img src="{rel_path}" alt="{alt_escaped}">{caption_html}'
+            f'<figure id="{identifier_attr}" class="entry-photo" data-photo-id="{identifier_attr}">'
+            f'<a href="{rel_path}" target="_blank"><img src="{rel_path}" alt="{alt_escaped}"></a>{caption_html}'
             f"</figure>"
         )
 
@@ -279,3 +281,59 @@ def get_first_photo_filename(
     if not dest_path.exists():
         return None
     return dest_name
+
+
+def get_photo_filenames_for_entry(
+    entry: dict,
+    photos_dir: Path,
+) -> list[tuple[str, str]]:
+    """
+    Return a list of (identifier, filename) for all photos referenced in the entry
+    text, in the order they first appear, where the corresponding file already
+    exists in photos_dir.
+
+    This relies on the same Day One photo metadata used elsewhere (identifier/md5)
+    and only inspects files already copied into the archive.
+    """
+    text = entry.get("text", "") or ""
+    photos_meta = entry.get("photos", []) or []
+    if not text or not photos_meta or not photos_dir.exists():
+        return []
+
+    # Build lookup by identifier so we can reuse md5 where available.
+    by_id: dict[str, dict] = {}
+    for p in photos_meta:
+        if "identifier" in p:
+            by_id[p["identifier"]] = p
+
+    files_in_dir = [f for f in photos_dir.iterdir() if f.is_file()]
+    seen: set[str] = set()
+    results: list[tuple[str, str]] = []
+
+    for m in PHOTO_REF_RE.finditer(text):
+        identifier = m.group(2).strip()
+        if not identifier or identifier in seen:
+            continue
+        seen.add(identifier)
+        meta = by_id.get(identifier)
+
+        filename: str | None = None
+        # Prefer md5 match when available.
+        if meta and "md5" in meta:
+            md5_val = meta["md5"]
+            for f in files_in_dir:
+                if f.stem == md5_val or f.name == md5_val or md5_val in f.name:
+                    filename = f.name
+                    break
+
+        # Fallback: identifier in filename.
+        if filename is None:
+            for f in files_in_dir:
+                if identifier in (f.stem, f.name):
+                    filename = f.name
+                    break
+
+        if filename:
+            results.append((identifier, filename))
+
+    return results

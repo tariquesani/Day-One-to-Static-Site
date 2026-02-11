@@ -1,0 +1,56 @@
+/* Media view: 2–3 column responsive grid of square photo tiles.
+   Each tile reuses the calendar full-bleed thumbnail style. */
+
+.media-main {
+  padding: 1rem var(--content-padding-x) 2rem;
+}
+
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 0;
+}
+
+.media-tile {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+}
+
+.media-thumb {
+  position: relative;
+  border-radius: 0;
+  overflow: hidden;
+  background: #eee;
+  aspect-ratio: 1;
+}
+
+.media-thumb .calendar-tile-img {
+  /* Already full-bleed + cover from calendar.css */
+}
+
+.media-label {
+  position: absolute;
+  right: 0.4rem;
+  bottom: 0.35rem;
+  text-align: right;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.media-label-day {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.media-label-month-year {
+  margin-top: 0.1rem;
+  font-size: 0.7rem;
+  line-height: 1.1;
+}
+
+
+/* Lightbox styles live in site.css so entry pages (which don’t load media.css) get the overlay */
+

@@ -218,6 +218,7 @@ def generate_index_html(
     template = env.get_template("list.html")
     context = {
         "css_path": "assets/css/",
+        "js_path": "assets/js/",
         "active_tab": "list",
         "index_url": "index.html",
         "calendar_url": "calendar.html",
@@ -225,6 +226,7 @@ def generate_index_html(
         "map_url": "map.html",
         "months": months_list,
         "year_range": _year_range_from_manifest(manifest_path),
+        "photo_index_url": "photo-index.json",
     }
     html = template.render(context)
     index_path = archive_root / "index.html"

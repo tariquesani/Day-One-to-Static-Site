@@ -43,7 +43,7 @@
     .entry-nav-menu a:hover { background: rgba(0,0,0,0.06); }
   </style>
 </head>
-<body>
+<body data-photo-index-url="{{ photo_index_url | default('') }}" data-archive-root="../../../">
   <main>
     <article class="entry" aria-labelledby="entry-title">
 
@@ -110,6 +110,7 @@
       </span>
     </nav>
   </main>
+  <script src="{{ js_path }}nav.js"></script>
   <script>
     (function() {
       document.body.classList.add('js-enabled');

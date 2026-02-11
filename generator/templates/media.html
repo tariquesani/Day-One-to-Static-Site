@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}The Narrative · Media{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ css_path }}media.css">
+{% endblock %}
+{% block content %}
+  <div class="media-main">
+    <section class="media-grid" aria-label="All photos">
+      {% for photo in photos %}
+      <a
+        href="{{ photo.entry_href }}"
+        class="media-tile"
+        data-photo-id="{{ photo.id }}"
+      >
+        <div class="media-thumb">
+          <img
+            src="{{ photo.image_url }}"
+            alt=""
+            class="calendar-tile-img"
+            loading="lazy"
+            width="1"
+            height="1"
+          >
+          {% if photo.day_label or photo.month_year %}
+          <div class="media-label">
+            {% if photo.day_label %}
+            <div class="media-label-day">{{ photo.day_label }}</div>
+            {% endif %}
+            {% if photo.month_year %}
+            <div class="media-label-month-year">{{ photo.month_year }}</div>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+      </a>
+      {% endfor %}
+    </section>
+  </div>
+{% endblock %}
+

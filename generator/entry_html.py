@@ -84,6 +84,9 @@ def _template_context(
         "map_url": map_url,
         "otd_url": otd_url,
         "css_path": "../../../assets/css/",
+        "js_path": "../../../assets/js/",
+        # Relative to each entry HTML, back up to archive root.
+        "photo_index_url": "../../../photo-index.json",
     }
 
 

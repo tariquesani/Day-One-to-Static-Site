@@ -152,6 +152,7 @@ def generate_calendar_html(
     template = env.get_template("calendar.html")
     context = {
         "css_path": "assets/css/",
+        "js_path": "assets/js/",
         "active_tab": "calendar",
         "index_url": "index.html",
         "calendar_url": "calendar.html",
@@ -160,6 +161,7 @@ def generate_calendar_html(
         "year_range": year_range,
         "weekdays": calendar_data["weekdays"],
         "years": calendar_data["years"],
+        "photo_index_url": "photo-index.json",
     }
     html = template.render(context)
     calendar_path = archive_root / "calendar.html"
