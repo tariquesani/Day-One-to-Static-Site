@@ -6,9 +6,11 @@ from pathlib import Path
 
 from generator import create_or_update, pick_zip_path, unzip_to_folder, write_entry_jsons
 from generator.archive_paths import assign_date_keys, output_dir_for_date_key, prev_next_map
+from generator.calendar_html import generate_calendar_html
 from generator.entry_html import generate_entry_html
 from generator.index_html import generate_index_html
 from generator.location_index import build_location_index
+from generator.media_html import generate_media_html
 from generator.otd_html import generate_otd_pages
 
 
@@ -139,6 +141,16 @@ def main():
             # Keep index.html fresh without regenerating all entry pages.
             archive_root = entries_dir.parent
             generate_index_html(import_dir, archive_root, entries_dir, manifest_path)
+
+            # Calendar: archive/calendar.html (journal-by-date calendar view)
+            generate_calendar_html(import_dir, archive_root, entries_dir, manifest_path)
+
+            # Media: archive/media.html and entries/photo-index.json (global photo index)
+            generate_media_html(
+                archive_root=archive_root,
+                entries_dir=entries_dir,
+                manifest_path=manifest_path,
+            )
 
             # On This Day: one page per calendar day (366 pages) under entries/on-this-day/
             generate_otd_pages(entries_dir)
