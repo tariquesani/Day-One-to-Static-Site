@@ -1,4 +1,4 @@
-"""Generate archive/media.html and a global photo-index.json for all photos.
+"""Generate archive/media.html and entries/photo-index.json for all photos.
 
 The media grid shows newest photos first (by entry creation order, then
 in-entry order). The photo index JSON is ordered in journal order
@@ -119,7 +119,7 @@ def generate_media_html(
     entries_dir: Path,
     manifest_path: Path,
 ) -> None:
-    """Generate archive/media.html and archive/photo-index.json."""
+    """Generate archive/media.html and entries/photo-index.json."""
     manifest_path = Path(manifest_path)
     if not manifest_path.exists():
         return
@@ -130,12 +130,12 @@ def generate_media_html(
     photos_chrono, photos_grid = _build_photo_lists(manifest_path, entries_dir)
     if not photos_chrono:
         # No photos; skip media.html but still write an empty index for robustness.
-        photo_index_path = archive_root / "photo-index.json"
+        photo_index_path = entries_dir / "photo-index.json"
         photo_index_path.write_text("[]", encoding="utf-8")
         return
 
     # Write global photo index (journal order, oldest-first) for lightbox traversal.
-    photo_index_path = archive_root / "photo-index.json"
+    photo_index_path = entries_dir / "photo-index.json"
     photo_index_path.write_text(json.dumps(photos_chrono, ensure_ascii=False, indent=2), encoding="utf-8")
 
     # Render media.html with newest-first grid.
@@ -153,7 +153,7 @@ def generate_media_html(
         "map_url": "map.html",
         "year_range": _year_range_from_manifest(manifest_path),
         "photos": photos_grid,
-        "photo_index_url": "photo-index.json",
+        "photo_index_url": "entries/photo-index.json",
     }
 
     html = template.render(context)

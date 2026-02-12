@@ -22,4 +22,4 @@ env/
 .ruff_cache/
 .coverage
 htmlcov/
-archive/photo-index.json
+archive/entries/photo-index.json

@@ -226,7 +226,7 @@ def generate_index_html(
         "map_url": "map.html",
         "months": months_list,
         "year_range": _year_range_from_manifest(manifest_path),
-        "photo_index_url": "photo-index.json",
+        "photo_index_url": "entries/photo-index.json",
     }
     html = template.render(context)
     index_path = archive_root / "index.html"

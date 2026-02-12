@@ -161,7 +161,7 @@ def generate_calendar_html(
         "year_range": year_range,
         "weekdays": calendar_data["weekdays"],
         "years": calendar_data["years"],
-        "photo_index_url": "photo-index.json",
+        "photo_index_url": "entries/photo-index.json",
     }
     html = template.render(context)
     calendar_path = archive_root / "calendar.html"

@@ -85,8 +85,8 @@ def _template_context(
         "otd_url": otd_url,
         "css_path": "../../../assets/css/",
         "js_path": "../../../assets/js/",
-        # Relative to each entry HTML, back up to archive root.
-        "photo_index_url": "../../../photo-index.json",
+        # Relative to each entry HTML (entries/YYYY/MM/*.html) to entries/photo-index.json.
+        "photo_index_url": "../../photo-index.json",
     }
 
 
