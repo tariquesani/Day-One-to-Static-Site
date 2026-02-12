@@ -8,6 +8,7 @@ from generator import create_or_update, pick_zip_path, unzip_to_folder, write_en
 from generator.archive_paths import assign_date_keys, output_dir_for_date_key, prev_next_map
 from generator.entry_html import generate_entry_html
 from generator.index_html import generate_index_html
+from generator.location_index import build_location_index
 from generator.otd_html import generate_otd_pages
 
 
@@ -141,6 +142,9 @@ def main():
 
             # On This Day: one page per calendar day (366 pages) under entries/on-this-day/
             generate_otd_pages(entries_dir)
+
+            # Map: location index for map.html (entries with lat/lng only)
+            build_location_index(entries_dir)
 
 
 if __name__ == "__main__":

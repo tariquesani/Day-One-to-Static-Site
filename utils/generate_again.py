@@ -16,6 +16,7 @@ from generator.calendar_html import generate_calendar_html
 from generator.media_html import generate_media_html
 from generator.entry_html import generate_entry_html
 from generator.index_html import generate_index_html
+from generator.location_index import build_location_index
 from generator.otd_html import generate_otd_pages
 
 
@@ -125,6 +126,8 @@ def main() -> None:
     otd_start = time.perf_counter()
     generate_otd_pages(entries_dir)
     otd_end = time.perf_counter()
+
+    build_location_index(entries_dir)
 
     total_end = time.perf_counter()
 
