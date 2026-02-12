@@ -19,7 +19,7 @@ def build_location_index(entries_dir: Path) -> None:
     locations: list[dict] = []
 
     for json_path in entries_dir.rglob("*.json"):
-        if json_path.name in ("manifest.json", "location-index.json"):
+        if json_path.name in ("manifest.json", "location-index.json", "photo-index.json"):
             continue
         date_key = json_path.stem
 
