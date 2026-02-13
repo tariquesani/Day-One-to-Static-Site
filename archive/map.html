@@ -13,6 +13,12 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/4.0.0/Control.FullScreen.min.css" crossorigin="">
   <style>
     #map { min-height: 70vh; width: 100%; }
+    .leaflet-popup-content-wrapper { min-width: 400px; max-width: 520px; }
+    .leaflet-popup-content { margin: 12px 16px; width: auto !important; }
+    .map-popup-content-row { display: flex; gap: 12px; align-items: flex-start; margin-top: 6px; }
+    .map-popup-body { flex: 1; min-width: 0; }
+    .map-popup .entry-preview { margin-top: 0; }
+    .map-popup .entry-thumb { flex-shrink: 0; width: 56px; height: 56px; object-fit: cover; border-radius: 4px; }
     .leaflet-control-fit-all {
       background: #fff;
       border-radius: 4px;
@@ -110,12 +116,32 @@
           var markers = L.markerClusterGroup();
           map.addLayer(markers);
 
+          var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
           list.forEach(function (loc) {
             var popup = '<div class="map-popup">';
-            popup += '<p><strong>' + (loc.date || '') + '</strong></p>';
-            if (loc.place) popup += '<p>' + escapeHtml(loc.place) + '</p>';
+            var dateLabel = '';
+            if (loc.date) {
+              var parts = loc.date.split('-');
+              if (parts.length >= 3) {
+                var mon = months[parseInt(parts[1], 10) - 1] || '';
+                var d = parseInt(parts[2], 10);
+                var yr = parts[0];
+                dateLabel = (loc.dow ? loc.dow + ' ' : '') + d + ' ' + mon + ' ' + yr;
+              } else {
+                dateLabel = loc.date;
+              }
+            }
+            if (dateLabel) popup += '<p><strong>' + escapeHtml(dateLabel) + '</strong></p>';
+            popup += '<div class="map-popup-content-row">';
+            popup += '<div class="map-popup-body">';
+            if (loc.snippet) popup += '<p class="entry-preview">' + escapeHtml(loc.snippet) + '</p>';
+            if (loc.meta_line) popup += '<div class="entry-meta">' + escapeHtml(loc.meta_line) + '</div>';
             popup += '<p><a href="' + escapeHtml(loc.path) + '">View entry</a></p>';
             popup += '</div>';
+            if (loc.thumbnail_url) {
+              popup += '<img class="entry-thumb" src="' + escapeHtml(loc.thumbnail_url) + '" alt="" width="56" height="56">';
+            }
+            popup += '</div></div>';
             var m = L.marker([loc.lat, loc.lng]).bindPopup(popup);
             markers.addLayer(m);
           });

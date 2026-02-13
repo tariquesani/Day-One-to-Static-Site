@@ -58,80 +58,6 @@ def _format_month_title(year_month: str) -> str:
         return year_month
 
 
-def _index_snippet(entry: dict, max_len: int = 160) -> str:
-    """
-    Build a short snippet for the index from the first few
-    non-empty, non-image lines of the entry text, up to max_len.
-    Also strips simple Markdown-style backslash escapes so that
-    sequences like '\\.' render as '.'.
-    """
-    import re
-
-    def _unescape_markdown(s: str) -> str:
-        # Unescape common Markdown backslash-escaped punctuation.
-        return re.sub(r"\\([\\`*_{}\[\]()#+\-.!])", r"\1", s)
-
-    text = _unescape_markdown((entry.get("text") or "").strip())
-    if not text:
-        # Fallback to title helper for entries without text.
-        raw = entry_helpers.get_title(entry)
-        if not raw:
-            return ""
-        raw = _unescape_markdown(raw.strip())
-        if len(raw) <= max_len:
-            return raw
-        return raw[: max_len - 1].rstrip() + "…"
-
-    # Collect the first few meaningful lines (similar to get_title logic).
-    lines: list[str] = []
-    for line in text.split("\n"):
-        candidate = line.strip()
-        if not candidate:
-            continue
-        # Skip pure image markdown lines.
-        if re.match(r"!\[\]", candidate):
-            continue
-        # Strip markdown headers (e.g. "## Heading").
-        if re.search(r"^#+\s*", candidate) and not candidate.startswith("# ["):
-            candidate = re.sub(r"^#+\s*", "", candidate)
-        if candidate:
-            lines.append(candidate)
-        if len(lines) >= 3:
-            break
-
-    if not lines:
-        return ""
-
-    # Combine the first up-to-three lines, then truncate to max_len.
-    snippet = " ".join(lines[:3]).strip()
-
-    if len(snippet) <= max_len:
-        return snippet
-    return snippet[: max_len - 1].rstrip() + "…"
-
-
-def _index_meta_line(entry: dict) -> str:
-    """Time · location · weather for index row."""
-    parts: list[str] = []
-    creation = entry.get("creationDate", "")
-    if creation:
-        try:
-            dt = datetime.fromisoformat(creation.replace("Z", "+00:00"))
-            hour = dt.hour % 12 or 12
-            t = f"{hour}:{dt.minute:02d} {dt.strftime('%p')}"
-        except (ValueError, TypeError):
-            t = ""
-        if t:
-            parts.append(t)
-    loc = entry_helpers.get_location(entry)
-    if loc:
-        parts.append(loc)
-    weather = entry_helpers.get_weather(entry)
-    if weather:
-        parts.append(weather)
-    return " · ".join(parts)
-
-
 def generate_index_html(
     import_dir: Path,
     archive_root: Path,
@@ -201,8 +127,8 @@ def generate_index_html(
             "date_iso": row_date_iso,
             "dow": dow,
             "day": day,
-            "snippet": _index_snippet(entry),
-            "meta_line": _index_meta_line(entry),
+            "snippet": entry_helpers.index_snippet(entry),
+            "meta_line": entry_helpers.index_meta_line(entry),
             "entry_url": entry_url,
             "thumbnail_url": thumbnail_url,
         }
