@@ -54,7 +54,7 @@ pip install -r requirements.txt
    - Generate entry HTML, `archive/index.html`, On This Day pages, and `archive/entries/location-index.json`
 
 3. **View the site**  
-   Opening index.html in your browser will work but some features like the photos opening in a lighbox with prev/next, the map may not work as expected from the file:// protocol
+   Opening index.html in your browser will work but some features like the photos opening in a lighbox with prev/next, the map will not work as expected from the file:// protocol
 
    For all the features serve the generated archive and open it in the browser using:
 
@@ -73,10 +73,7 @@ When viewing the generated archive in your browser (served with `python launch.p
 - **Esc** — Close photo lightbox overlays
 - **Space** — Open the Menu on an entry page when menu button is in viewport (Up and down arrows select menu items)
 
-Shortcuts work in most major browsers when the archive is served locally at `http://127.0.0.1:8000`. Some features (like lightbox navigation) may not work if you open HTML files directly from disk (`file://`), so use `python launch.py` for best results.
-
-
-
+Shortcuts work in most major browsers when the archive is served locally at `http://127.0.0.1:8000`. Some features (like lightbox navigation, map) may not work if you open HTML files directly from disk (`file://`), so use `python launch.py` for best results.
 
 ## Project structure
 
