@@ -28,16 +28,64 @@ markdown>=3.0
 tzdata>=2024.1
 ```
 
-Install with:
 
-```bash
-pip install -r requirements.txt
-```
+## Setup
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/tariquesani/dayone-to-static-site.git
+   cd dayone-to-static-site
+   ```
+
+   (Replace the URL with the actual repository URL if different.)
+
+2. **Use a Python 3.10 virtual environment (strongly recommended)**
+
+   Using a virtual environment keeps this project’s dependencies isolated from your system Python and avoids version conflicts. **We strongly recommend creating and using a Python 3.10 virtual environment** before installing dependencies or running the scripts.
+
+   Create the virtual environment (from the project root):
+
+   ```bash
+   # Windows (if Python 3.10 is on PATH as py)
+   py -3.10 -m venv .venv
+
+   # Windows (if python refers to 3.10)
+   python -m venv .venv
+
+   # macOS / Linux
+   python3.10 -m venv .venv
+   ```
+
+   Activate it:
+
+   - **Windows (PowerShell):**  
+     ```powershell
+     .venv\Scripts\Activate.ps1
+     ```
+   - **Windows (Command Prompt):**  
+     ```cmd
+     .venv\Scripts\activate.bat
+     ```
+   - **macOS / Linux:**  
+     ```bash
+     source .venv/bin/activate
+     ```
+
+   When the virtual environment is active, your prompt will usually show `(.venv)`.
+
+3. **Install dependencies**
+
+   With the virtual environment activated:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 ## Quick start
 
 1. **Export from Day One**  
-   In Day One, export your journal as a ZIP (Settings → Export → ZIP). You’ll get a folder with a `.json` file and a `photos` (or similar) directory.
+   In Day One, export your journal as a ZIP (Settings → Export → ZIP/JSON). You’ll get a zip file with a `.json` file and a `photos` (or similar) directory.
 
 2. **Generate the archive**  
    From the project root:
