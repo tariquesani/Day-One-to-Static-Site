@@ -38,8 +38,6 @@ tzdata>=2024.1
    cd dayone-to-static-site
    ```
 
-   (Replace the URL with the actual repository URL if different.)
-
 2. **Use a Python 3.10 virtual environment (strongly recommended)**
 
    Using a virtual environment keeps this project’s dependencies isolated from your system Python and avoids version conflicts. **We strongly recommend creating and using a Python 3.10 virtual environment** before installing dependencies or running the scripts.
