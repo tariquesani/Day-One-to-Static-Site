@@ -6,9 +6,14 @@ from pathlib import Path
 
 PORT = 8000
 
-# Resolve directory of the executable itself
-# ROOT = Path(sys.executable if getattr(sys, 'frozen', False) else __file__).parent.resolve()
-ROOT = "archive"
+# Directory of this script or executable (when frozen, e.g. PyInstaller)
+SCRIPT_DIR = Path(sys.executable if getattr(sys, 'frozen', False) else __file__).parent.resolve()
+
+# Use script dir as root if index.html is there, otherwise use archive subfolder
+if (SCRIPT_DIR / "index.html").is_file():
+    ROOT = SCRIPT_DIR
+else:
+    ROOT = SCRIPT_DIR / "archive"
 
 class Handler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
