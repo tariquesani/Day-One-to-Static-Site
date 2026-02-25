@@ -9,6 +9,7 @@ from jinja2 import Environment, FileSystemLoader
 from generator import entry_helpers
 from generator.archive_paths import output_dir_for_date_key
 from generator.entry_html import _format_creation_date, _format_creation_time
+from generator.nav_context import tab_urls_for_page
 from generator.text_to_html import entry_text_to_html
 
 
@@ -135,6 +136,8 @@ def generate_otd_pages(entries_dir: Path) -> None:
     env = Environment(loader=FileSystemLoader(templates_dir))
     template = env.get_template("on_this_day.html")
 
+    tab_urls = tab_urls_for_page(archive_root, otd_dir)
+
     for i, mm_dd in enumerate(ALL_MM_DD):
         prev_mm_dd = ALL_MM_DD[(i - 1) % n]
         next_mm_dd = ALL_MM_DD[(i + 1) % n]
@@ -178,11 +181,6 @@ def generate_otd_pages(entries_dir: Path) -> None:
             if current_list and current_year:
                 years_entries.append((current_year, current_list))
 
-        index_url = "../../index.html"
-        calendar_url = "../../calendar.html"
-        media_url = "../../media.html"
-        map_url = "../../map.html"
-
         context = {
             "title": title,
             "day_label": day_label,
@@ -192,10 +190,7 @@ def generate_otd_pages(entries_dir: Path) -> None:
             "next_url": next_url,
             "prev_label": prev_label,
             "next_label": next_label,
-            "index_url": index_url,
-            "calendar_url": calendar_url,
-            "media_url": media_url,
-            "map_url": map_url,
+            "tab_urls": tab_urls,
             "css_path": css_path,
         }
         html = template.render(context)

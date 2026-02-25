@@ -92,19 +92,21 @@
       <span class="entry-nav-links">
         <span class="entry-nav-inline">
           {% if otd_url %}<a href="{{ otd_url }}" class="entry-nav-otd">On this day</a> · {% endif %}
-          <a href="{{ index_url }}" class="entry-nav-index">List</a> ·
-          <a href="{{ calendar_url }}" class="entry-nav-calendar">Calendar</a> ·
-          <a href="{{ media_url }}" class="entry-nav-media">Media</a> ·
-          <a href="{{ map_url }}" class="entry-nav-map">Map</a>
+          <a href="{{ tab_urls.index_url }}" class="entry-nav-index">List</a> ·
+          <a href="{{ tab_urls.calendar_url }}" class="entry-nav-calendar">Calendar</a> ·
+          <a href="{{ tab_urls.media_url }}" class="entry-nav-media">Media</a> ·
+          <a href="{{ tab_urls.map_url }}" class="entry-nav-map">Map</a> ·
+          <a href="{{ tab_urls.search_url }}" class="entry-nav-search">Search</a>
         </span>
         <span class="entry-nav-popup-wrapper" aria-hidden="true">
           <button type="button" class="entry-nav-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="entry-nav-menu">Menu</button>
           <div id="entry-nav-menu" class="entry-nav-menu" role="menu" hidden>
             {% if otd_url %}<a href="{{ otd_url }}" role="menuitem">On this day</a>{% endif %}
-            <a href="{{ index_url }}" role="menuitem">List</a>
-            <a href="{{ calendar_url }}" role="menuitem">Calendar</a>
-            <a href="{{ media_url }}" role="menuitem">Media</a>
-            <a href="{{ map_url }}" role="menuitem">Map</a>
+            <a href="{{ tab_urls.index_url }}" role="menuitem">List</a>
+            <a href="{{ tab_urls.calendar_url }}" role="menuitem">Calendar</a>
+            <a href="{{ tab_urls.media_url }}" role="menuitem">Media</a>
+            <a href="{{ tab_urls.map_url }}" role="menuitem">Map</a>
+            <a href="{{ tab_urls.search_url }}" role="menuitem">Search</a>
           </div>
         </span>
       </span>

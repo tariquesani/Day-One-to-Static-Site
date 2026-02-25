@@ -11,6 +11,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from generator.entry_html import _load_manifest_full
 from generator.index_html import _year_range_from_manifest
+from generator.nav_context import tab_urls_for_root
 from generator.text_to_html import get_first_photo_filename
 
 
@@ -150,14 +151,12 @@ def generate_calendar_html(
     templates_dir = Path(__file__).resolve().parent / "templates"
     env = Environment(loader=FileSystemLoader(templates_dir))
     template = env.get_template("calendar.html")
+    tab_urls = tab_urls_for_root()
     context = {
         "css_path": "assets/css/",
         "js_path": "assets/js/",
         "active_tab": "calendar",
-        "index_url": "index.html",
-        "calendar_url": "calendar.html",
-        "media_url": "media.html",
-        "map_url": "map.html",
+        "tab_urls": tab_urls,
         "year_range": year_range,
         "weekdays": calendar_data["weekdays"],
         "years": calendar_data["years"],

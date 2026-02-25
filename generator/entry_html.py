@@ -9,6 +9,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from generator import entry_helpers
 from generator.archive_paths import output_dir_for_date_key
+from generator.nav_context import tab_urls_for_page
 from generator.text_to_html import entry_text_to_html
 
 
@@ -41,10 +42,7 @@ def _template_context(
     body_html: str,
     prev_url: str | None,
     next_url: str | None,
-    index_url: str,
-    calendar_url: str,
-    media_url: str,
-    map_url: str,
+    tab_urls: dict[str, str],
 ) -> dict:
     """Build the Jinja template context for an entry."""
     creation_date = entry.get("creationDate", "")
@@ -78,10 +76,7 @@ def _template_context(
         "moon_emoji": entry_helpers.get_moon_emoji(entry),
         "prev_url": prev_url,
         "next_url": next_url,
-        "index_url": index_url,
-        "calendar_url": calendar_url,
-        "media_url": media_url,
-        "map_url": map_url,
+        "tab_urls": tab_urls,
         "otd_url": otd_url,
         "css_path": "../../../assets/css/",
         "js_path": "../../../assets/js/",
@@ -171,12 +166,16 @@ def generate_entry_html(
     manifest_entries = _load_manifest(manifest_path)
     prev_url, next_url = _prev_next_urls(date_key, manifest_entries, output_dir, entries_dir)
     archive_root = entries_dir.parent
-    index_url = os.path.relpath(archive_root / "index.html", output_dir).replace("\\", "/")
-    calendar_url = os.path.relpath(archive_root / "calendar.html", output_dir).replace("\\", "/")
-    media_url = os.path.relpath(archive_root / "media.html", output_dir).replace("\\", "/")
-    map_url = os.path.relpath(archive_root / "map.html", output_dir).replace("\\", "/")
+    tab_urls = tab_urls_for_page(archive_root, output_dir)
 
-    context = _template_context(entry, date_key, body_html, prev_url, next_url, index_url, calendar_url, media_url, map_url)
+    context = _template_context(
+        entry,
+        date_key,
+        body_html,
+        prev_url,
+        next_url,
+        tab_urls,
+    )
 
     templates_dir = Path(__file__).resolve().parent / "templates"
     env = Environment(loader=FileSystemLoader(templates_dir))

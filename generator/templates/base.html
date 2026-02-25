@@ -30,10 +30,11 @@
     <!-- White content area with subtle rounded top; holds tabs + main content -->
     <div class="content-sheet">
       <nav class="tabs" aria-label="View">
-        <a href="{{ index_url }}" class="tab{% if active_tab == 'list' %} is-active{% endif %}">List</a>
-        <a href="{{ calendar_url }}" class="tab{% if active_tab == 'calendar' %} is-active{% endif %}">Calendar</a>
-        <a href="{{ media_url }}" class="tab{% if active_tab == 'media' %} is-active{% endif %}">Media</a>
-        <a href="{{ map_url }}" class="tab{% if active_tab == 'map' %} is-active{% endif %}">Map</a>
+        <a href="{{ tab_urls.index_url }}" class="tab{% if active_tab == 'list' %} is-active{% endif %}">List</a>
+        <a href="{{ tab_urls.calendar_url }}" class="tab{% if active_tab == 'calendar' %} is-active{% endif %}">Calendar</a>
+        <a href="{{ tab_urls.media_url }}" class="tab{% if active_tab == 'media' %} is-active{% endif %}">Media</a>
+        <a href="{{ tab_urls.map_url }}" class="tab{% if active_tab == 'map' %} is-active{% endif %}">Map</a>
+        <a href="{{ tab_urls.search_url }}" class="tab{% if active_tab == 'search' %} is-active{% endif %}">Search</a>
       </nav>
 
       {% block content %}{% endblock %}

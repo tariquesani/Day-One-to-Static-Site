@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo
 from jinja2 import Environment, FileSystemLoader
 
 from generator import entry_helpers
+from generator.nav_context import tab_urls_for_root
 from generator.text_to_html import get_first_photo_filename
 
 
@@ -142,14 +143,12 @@ def generate_index_html(
     templates_dir = Path(__file__).resolve().parent / "templates"
     env = Environment(loader=FileSystemLoader(templates_dir))
     template = env.get_template("list.html")
+    tab_urls = tab_urls_for_root()
     context = {
         "css_path": "assets/css/",
         "js_path": "assets/js/",
         "active_tab": "list",
-        "index_url": "index.html",
-        "calendar_url": "calendar.html",
-        "media_url": "media.html",
-        "map_url": "map.html",
+        "tab_urls": tab_urls,
         "months": months_list,
         "year_range": _year_range_from_manifest(manifest_path),
         "photo_index_url": "entries/photo-index.json",
