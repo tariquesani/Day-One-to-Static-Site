@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Search – The Narrative</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <link rel="stylesheet" href="assets/css/index.css">
+  <link rel="stylesheet" href="assets/css/calendar.css">
+  <style>
+    .search-form { padding: 1rem var(--content-padding-x) 0.75rem; border-bottom: 1px solid var(--divider); display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; align-items: center; gap: 0.5rem; }
+    .search-form input { width: 100%; min-width: 0; padding: 0.6rem 0.75rem; font-size: 1rem; border: 1px solid var(--divider); border-radius: 6px; }
+    .search-form input:focus { outline: 2px solid var(--accent, #2563eb); outline-offset: 2px; }
+    .search-form .search-options-toggle { color: var(--muted); background: none; border: 1px solid var(--divider); font-size: 0.875rem; cursor: pointer; padding: 0.4rem 0.5rem; border-radius: 6px; white-space: nowrap; }
+    .search-form .search-options-toggle:hover { color: var(--ink); border-color: var(--ink); }
+    .search-form .search-cancel { color: #2563eb; background: none; border: none; font-size: 0.9375rem; cursor: pointer; padding: 0.4rem 0.5rem; white-space: nowrap; }
+    .search-form .search-cancel:hover { text-decoration: underline; }
+    .search-form .sort-by { display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap; }
+    .search-form .sort-by label { font-size: 0.875rem; color: var(--muted); }
+    .search-form .sort-by select { padding: 0.4rem 0.5rem; font-size: 0.875rem; border: 1px solid var(--divider); border-radius: 6px; background: #fff; cursor: pointer; }
+    .search-options-panel { padding: 0.75rem var(--content-padding-x) 1rem; border-bottom: 1px solid var(--divider); background: #f8fafc; display: none; }
+    .search-options-panel.is-open { display: block; }
+    .search-options-panel .options-row { display: flex; align-items: center; gap: 1rem 1.5rem; }
+    .search-options-panel .options-row + .options-row { margin-top: 0.75rem; }
+    .search-options-panel .option-group { display: flex; align-items: center; gap: 0.5rem; }
+    .search-options-panel .option-group label { font-size: 0.875rem; color: var(--muted); }
+    .search-options-panel .option-group input[type="date"] { padding: 0.35rem 0.5rem; font-size: 0.875rem; border: 1px solid var(--divider); border-radius: 6px; }
+    .search-options-panel .match-mode { display: flex; align-items: center; gap: 0.75rem; }
+    .search-options-panel .match-mode label { font-size: 0.875rem; color: var(--ink); font-weight: normal; }
+    .search-options-panel .options-hint { font-size: 0.75rem; color: var(--muted); margin-top: 0.5rem; }
+    .search-status { padding: 0.5rem var(--content-padding-x); font-size: 0.875rem; color: var(--muted); }
+    .search-results h2 { font-size: 1rem; font-weight: 600; margin: 1rem var(--content-padding-x) 0.5rem; color: var(--muted); }
+    .search-results .search-result-row { display: flex; gap: 0.75rem; padding: 0.75rem var(--content-padding-x); border-bottom: 1px solid var(--divider); text-decoration: none; color: inherit; align-items: flex-start; }
+    .search-results .search-result-row:hover { background: #f8fafc; }
+    .search-results .search-result-thumb { width: 56px; height: 56px; flex-shrink: 0; object-fit: cover; border-radius: 4px; background: #f1f5f9; }
+    .search-results .search-result-thumb.placeholder { background: #e2e8f0; }
+    .search-results .search-result-body { min-width: 0; flex: 1; }
+    .search-results .search-result-snippet { margin: 0; font-size: clamp(0.95rem, 2.5vw, 1.05rem); line-height: 1.4; color: #1e293b; }
+    .search-results .search-result-snippet strong { font-weight: 600; }
+    .search-results .search-result-meta { margin-top: 0.35rem; font-size: 0.8125rem; color: var(--muted); }
+    #search-loading { padding: 2rem var(--content-padding-x); color: var(--muted); }
+    #search-error { padding: 1rem var(--content-padding-x); color: #b91c1c; }
+  </style>
+</head>
+<body data-photo-index-url="entries/photo-index.json" data-archive-root="./">
+
+  <header class="hero-header">
+    <h1>The Narrative</h1>
+    <p class="subtitle">Search</p>
+  </header>
+
+  <div class="main-wrap">
+    <div class="compact-header-wrap">
+      <header class="compact-header">
+        <h1><a href="index.html">The Narrative</a></h1>
+      </header>
+    </div>
+
+    <div class="content-sheet">
+      <nav class="tabs" aria-label="View">
+        <a href="index.html" class="tab">List</a>
+        <a href="calendar.html" class="tab">Calendar</a>
+        <a href="media.html" class="tab">Media</a>
+        <a href="map.html" class="tab">Map</a>
+        <a href="search.html" class="tab is-active">Search</a>
+      </nav>
+
+      <main class="index">
+        <div class="search-form" id="search-form" style="display: none;">
+          <input type="search" id="search-input" placeholder="Search entries…" autocomplete="off" aria-label="Search entries">
+          <div class="sort-by">
+            <label for="search-sort">Sort by</label>
+            <select id="search-sort" aria-label="Sort results by">
+              <option value="relevance">Relevance</option>
+              <option value="date">Date</option>
+            </select>
+          </div>
+          <button type="button" class="search-options-toggle" id="search-options-toggle" aria-expanded="false" aria-controls="search-options-panel">Options</button>
+          <button type="button" class="search-cancel" id="search-cancel">Cancel</button>
+        </div>
+        <div class="search-options-panel" id="search-options-panel" role="region" aria-label="Search options" hidden>
+          <div class="options-row">
+            <div class="option-group match-mode">
+              <span style="margin-right: 0.25rem; font-size: 0.875rem; color: var(--muted);">Match</span>
+              <label><input type="radio" name="search-match" value="or" checked> Any word (OR)</label>
+              <label><input type="radio" name="search-match" value="and"> All words (AND)</label>
+            </div>
+          </div>
+          <div class="options-row">
+            <div class="option-group">
+              <label for="search-date-from">From</label>
+              <input type="date" id="search-date-from" aria-label="Date from">
+            </div>
+            <div class="option-group">
+              <label for="search-date-to">To</label>
+              <input type="date" id="search-date-to" aria-label="Date to">
+            </div>
+          </div>
+          <p class="options-hint">Leave date empty for no limit.</p>
+        </div>
+        <div class="search-status" id="search-status" aria-live="polite"></div>
+        <div id="search-loading">Loading search index…</div>
+        <div id="search-error" style="display: none;"></div>
+        <div class="search-results" id="search-results"></div>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/js/nav.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/minisearch@7.1.2/dist/umd/index.min.js"></script>
+  <script>
+    (function () {
+      var hero = document.querySelector('.hero-header');
+      if (hero) {
+        var observer = new IntersectionObserver(function (entries) {
+          document.body.classList.toggle('hero-out', !entries[0].isIntersecting);
+        }, { rootMargin: '0px', threshold: 0.20 });
+        observer.observe(hero);
+      }
+    })();
+  </script>
+  <script>
+    (function () {
+      function escapeHtml(s) {
+        if (s == null || s === '') return '';
+        var div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+      }
+
+      function formatDateTime(isoDate) {
+        if (!isoDate) return '';
+        var d = new Date(isoDate);
+        if (isNaN(d.getTime())) return isoDate.slice(0, 10);
+        var day = d.getDate();
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        var month = months[d.getMonth()];
+        var year = d.getFullYear();
+        var h = d.getHours();
+        var m = d.getMinutes();
+        var ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        return day + ' ' + month + ' ' + year + ' at ' + h + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
+      }
+
+      function escapeRegex(s) {
+        return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      }
+
+      function highlightTerms(text, query) {
+        if (!text) return '';
+        var escaped = escapeHtml(text);
+        if (!query || !query.trim()) return escaped;
+        var terms = query.trim().split(/\s+/).filter(Boolean);
+        terms.forEach(function (term) {
+          var re = new RegExp('(' + escapeRegex(term) + ')', 'gi');
+          escaped = escaped.replace(re, '<strong>$1</strong>');
+        });
+        return escaped;
+      }
+
+      var searchInput = document.getElementById('search-input');
+      var searchForm = document.getElementById('search-form');
+      var searchCancel = document.getElementById('search-cancel');
+      var searchSort = document.getElementById('search-sort');
+      var searchOptionsToggle = document.getElementById('search-options-toggle');
+      var searchOptionsPanel = document.getElementById('search-options-panel');
+      var searchDateFrom = document.getElementById('search-date-from');
+      var searchDateTo = document.getElementById('search-date-to');
+      var searchStatus = document.getElementById('search-status');
+      var searchLoading = document.getElementById('search-loading');
+      var searchError = document.getElementById('search-error');
+      var searchResults = document.getElementById('search-results');
+
+      var miniSearch = null;
+      var debounceTimer = null;
+      var DEBOUNCE_MS = 200;
+      var lastQuery = '';
+
+      function renderResults(results, query) {
+        query = query || lastQuery;
+        lastQuery = query;
+        if (!results || results.length === 0) {
+          searchResults.innerHTML = '<div class="search-status" style="padding: 1.5rem var(--content-padding-x);">No matches.</div>';
+          return;
+        }
+        var html = '<h2>Matching Entries</h2>';
+        results.forEach(function (doc) {
+          var url = doc.url || ('entries/' + (doc.id || '').replace(/-/g, '/') + '.html');
+          var snippetHtml = highlightTerms(doc.excerpt || '', query);
+          var dateTimeStr = formatDateTime(doc.creation_date) || escapeHtml(doc.date || doc.id || '');
+          var locationStr = (doc.location || '').trim();
+          var metaParts = [dateTimeStr];
+          if (locationStr) metaParts.push(locationStr);
+          var metaStr = metaParts.join(' • ');
+          var thumbSrc = doc.thumbnail_url ? escapeHtml(doc.thumbnail_url) : '';
+          var thumbClass = 'search-result-thumb' + (thumbSrc ? '' : ' placeholder');
+          html += '<a class="search-result-row" href="' + escapeHtml(url) + '">';
+          if (thumbSrc) {
+            html += '<img class="' + thumbClass + '" src="' + thumbSrc + '" alt="" width="56" height="56" loading="lazy">';
+          } else {
+            html += '<div class="' + thumbClass + '" aria-hidden="true"></div>';
+          }
+          html += '<div class="search-result-body">';
+          html += '<p class="search-result-snippet">' + snippetHtml + '</p>';
+          html += '<div class="search-result-meta">' + escapeHtml(metaStr) + '</div>';
+          html += '</div></a>';
+        });
+        searchResults.innerHTML = html;
+      }
+
+      function getMatchMode() {
+        var radio = document.querySelector('input[name="search-match"]:checked');
+        return (radio && radio.value) || 'or';
+      }
+
+      function getDateRange() {
+        var from = searchDateFrom && searchDateFrom.value ? searchDateFrom.value.trim() : '';
+        var to = searchDateTo && searchDateTo.value ? searchDateTo.value.trim() : '';
+        return { from: from, to: to };
+      }
+
+      function filterResultsByDate(results, from, to) {
+        if (!from && !to) return results;
+        return results.filter(function (doc) {
+          var d = (doc.creation_date || doc.date || '').slice(0, 10);
+          if (!d) return false;
+          if (from && d < from) return false;
+          if (to && d > to) return false;
+          return true;
+        });
+      }
+
+      function runSearch() {
+        var q = (searchInput.value || '').trim();
+        if (!miniSearch) return;
+        if (q.length === 0) {
+          searchStatus.textContent = 'Type to search entries...';
+          searchResults.innerHTML = '';
+          return;
+        }
+        var combineWith = getMatchMode() === 'and' ? 'and' : 'or';
+        var results = miniSearch.search(q, { prefix: true, fuzzy: 0.2, maxResults: 100, combineWith: combineWith });
+        var range = getDateRange();
+        results = filterResultsByDate(results, range.from, range.to);
+        var sortBy = (searchSort && searchSort.value) || 'relevance';
+        if (sortBy === 'date') {
+          results.sort(function (a, b) { return (b.creation_date || '').localeCompare(a.creation_date || ''); });
+        }
+        searchStatus.textContent = results.length + ' result' + (results.length === 1 ? '' : 's');
+        renderResults(results, q);
+      }
+
+      function resetOptions() {
+        if (searchSort) searchSort.value = 'relevance';
+        var orRadio = document.querySelector('input[name="search-match"][value="or"]');
+        if (orRadio) orRadio.checked = true;
+        if (searchDateFrom) searchDateFrom.value = '';
+        if (searchDateTo) searchDateTo.value = '';
+        if (searchOptionsPanel) {
+          searchOptionsPanel.classList.remove('is-open');
+          searchOptionsPanel.setAttribute('hidden', '');
+        }
+        if (searchOptionsToggle) searchOptionsToggle.setAttribute('aria-expanded', 'false');
+      }
+
+      function cancelSearch() {
+        if (searchInput) searchInput.value = '';
+        resetOptions();
+        if (searchStatus) searchStatus.textContent = 'Type to search entries (prefix and fuzzy).';
+        searchResults.innerHTML = '';
+        if (searchInput) searchInput.focus();
+      }
+
+      function onInput() {
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(runSearch, DEBOUNCE_MS);
+      }
+
+      fetch('entries/search-index.json')
+        .then(function (r) {
+          if (!r.ok) throw new Error('Failed to load search index');
+          return r.json();
+        })
+        .then(function (data) {
+          var documents = data.documents || [];
+          searchLoading.style.display = 'none';
+          searchError.style.display = 'none';
+          if (documents.length === 0) {
+            searchStatus.textContent = 'No entries in search index.';
+            return;
+          }
+          miniSearch = new MiniSearch({
+            fields: ['content', 'tags'],
+            storeFields: ['id', 'url', 'date', 'creation_date', 'location', 'tags', 'excerpt', 'thumbnail_url']
+          });
+          miniSearch.addAll(documents);
+          searchForm.style.display = 'grid';
+          searchStatus.textContent = documents.length + ' entries indexed. Type to search (prefix and fuzzy).';
+          searchInput.addEventListener('input', onInput);
+          searchInput.addEventListener('search', runSearch);
+          if (searchCancel) searchCancel.addEventListener('click', cancelSearch);
+          if (searchSort) searchSort.addEventListener('change', runSearch);
+          if (searchOptionsToggle && searchOptionsPanel) {
+            searchOptionsToggle.addEventListener('click', function () {
+              var isOpen = searchOptionsPanel.classList.toggle('is-open');
+              searchOptionsToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+              if (isOpen) searchOptionsPanel.removeAttribute('hidden');
+              else searchOptionsPanel.setAttribute('hidden', '');
+            });
+          }
+          var matchRadios = document.querySelectorAll('input[name="search-match"]');
+          for (var i = 0; i < matchRadios.length; i++) matchRadios[i].addEventListener('change', runSearch);
+          if (searchDateFrom) searchDateFrom.addEventListener('change', runSearch);
+          if (searchDateTo) searchDateTo.addEventListener('change', runSearch);
+          searchInput.focus();
+        })
+        .catch(function (err) {
+          searchLoading.style.display = 'none';
+          searchError.style.display = 'block';
+          searchError.textContent = 'Could not load search index: ' + (err.message || 'unknown error');
+        });
+    })();
+  </script>
+</body>
+</html>
