@@ -18,6 +18,7 @@ from generator.entry_html import generate_entry_html
 from generator.index_html import generate_index_html
 from generator.location_index import build_location_index
 from generator.otd_html import generate_otd_pages
+from utils.generate_search import build_search_index
 
 
 def _discover_imports(imports_base: Path) -> list[tuple[Path, Path]]:
@@ -128,6 +129,9 @@ def main() -> None:
     otd_end = time.perf_counter()
 
     build_location_index(entries_dir)
+
+    search_index_path = entries_dir / "search-index.json"
+    build_search_index(entries_dir, search_index_path, verbose=True)
 
     total_end = time.perf_counter()
 

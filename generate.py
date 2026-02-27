@@ -12,6 +12,7 @@ from generator.index_html import generate_index_html
 from generator.location_index import build_location_index
 from generator.media_html import generate_media_html
 from generator.otd_html import generate_otd_pages
+from utils.generate_search import build_search_index
 
 
 def _normalize_import_json_place_names(dayone_json: Path) -> None:
@@ -157,6 +158,10 @@ def main():
 
             # Map: location index for map.html (entries with lat/lng only)
             build_location_index(entries_dir)
+
+            # Search index: entries/search-index.json for client-side search
+            search_index_path = entries_dir / "search-index.json"
+            build_search_index(entries_dir, search_index_path, verbose=True)
 
 
 if __name__ == "__main__":
