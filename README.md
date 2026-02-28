@@ -1,6 +1,6 @@
 # Day One to Static Site
 
-Turn a [Day One](https://dayoneapp.com/) journal export (ZIP) into a self-contained static website. Entries become HTML pages with prev/next navigation, and the archive includes a list view, calendar, media grid, map, and “On This Day” pages. 
+Turn a [Day One](https://dayoneapp.com/) journal export (ZIP) into a self-contained static website. Entries become HTML pages with prev/next navigation, and the archive includes a list view, calendar, media grid, map, search, and “On This Day” pages. 
 
 I created this project because I have 14 years worth of journal entries and I want them to survive after me and be accessible even without the Day One app. 
 
@@ -12,6 +12,7 @@ I created this project because I have 14 years worth of journal entries and I wa
 - **Calendar** — `calendar.html` shows a full calendar grid with entry links and optional thumbnails.
 - **Media** — `media.html` displays all photos in a grid; `entries/photo-index.json` powers lightbox-style navigation across entries.
 - **Map** — `map.html` uses Leaflet and `entries/location-index.json` to show entry locations (lat/lng).
+- **Search** — `search.html` provides full-text search over entries using a client-side index (`entries/search-index.json`); supports relevance/date sort and optional filters (e.g. date range, match mode). Best used when the archive is served (e.g. `python launch.py`) so the index loads.
 - **On This Day** — One page per calendar day (e.g. `entries/on-this-day/02-12.html`) listing entries from that day across years.
 - **Incremental updates** — Re-importing only regenerates changed entries and neighbors; existing data is preserved.
 
@@ -97,7 +98,7 @@ tzdata>=2024.1
    - Extract it to `_imports/<zip_stem>/`
    - Create or update `archive/entries/manifest.json` (by entry UUID)
    - Write per-entry JSON under `archive/entries/YYYY/MM/<date_key>.json`
-   - Generate entry HTML, `archive/index.html`, On This Day pages, and `archive/entries/location-index.json`
+   - Generate entry HTML, `archive/index.html`, On This Day pages, `archive/entries/location-index.json`, and `archive/entries/search-index.json`
 
 3. **View the site**  
    Opening index.html in your browser will work but some features like the photos opening in a lighbox with prev/next, the map will not work as expected from the file:// protocol
@@ -119,7 +120,7 @@ When viewing the generated archive in your browser (served with `python launch.p
 - **Esc** — Close photo lightbox overlays
 - **Space** — Open the Menu on an entry page when menu button is in viewport (Up and down arrows select menu items)
 
-Shortcuts work in most major browsers when the archive is served locally at `http://127.0.0.1:8000`. Some features (like lightbox navigation, map) may not work if you open HTML files directly from disk (`file://`), so use `python launch.py` for best results.
+Shortcuts work in most major browsers when the archive is served locally at `http://127.0.0.1:8000`. Some features (like lightbox navigation, map, search) may not work if you open HTML files directly from disk (`file://`), so use `python launch.py` for best results.
 
 ## Project structure
 
@@ -148,18 +149,22 @@ Day One to Static Site/
 │   ├── generate_calendar.py
 │   ├── generate_index.py    # Regenerate only index.html
 │   ├── generate_map.py
+│   ├── generate_media.py
 │   ├── generate_otd.py
+│   ├── generate_search.py
 │   └── cleaner.py
 ├── archive/                 # Generated static site (git-ignored entries/*)
 │   ├── index.html
 │   ├── calendar.html
 │   ├── media.html
 │   ├── map.html
+│   ├── search.html
 │   ├── assets/              # CSS, JS
 │   └── entries/
 │       ├── manifest.json
 │       ├── location-index.json
 │       ├── photo-index.json
+│       ├── search-index.json
 │       ├── on-this-day/     # MM-DD.html
 │       └── YYYY/MM/         # date_key.html, date_key.json, photos/
 └── _imports/                # Extracted ZIPs (one folder per import)
@@ -173,10 +178,12 @@ Day One to Static Site/
 | `calendar.html` | Calendar grid with links (and optional thumbnails) per day. |
 | `media.html` | All photos in a grid; uses `entries/photo-index.json` for navigation. |
 | `map.html` | Leaflet map of entries that have lat/lng; uses `entries/location-index.json`. |
+| `search.html` | Full-text search over entries; uses `entries/search-index.json`. |
 | `entries/manifest.json` | One row per entry: `[uuid, date_key, html_path, creation_date]`. |
 | `entries/YYYY/MM/<date_key>.html` | Single entry page. |
 | `entries/YYYY/MM/<date_key>.json` | Raw entry JSON from Day One. |
 | `entries/on-this-day/MM-DD.html` | Entries for that calendar day (all years). |
+| `entries/search-index.json` | Client-side search index (title, plain text, date, path) for the Search page. |
 
 Date keys are `YYYY-MM-DD` or `YYYY-MM-DD_N` when multiple entries share the same local date (timezone comes from the entry’s `location.timeZoneName`).
 
@@ -190,7 +197,9 @@ Run from the project root. Some assume you’ve already run `generate.py` at lea
 | `utils/generate_index.py` | Regenerate only `archive/index.html` from the current manifest. |
 | `utils/generate_calendar.py` | Regenerate only `archive/calendar.html`. |
 | `utils/generate_map.py` | Regenerate only `archive/entries/location-index.json` (and any map-specific output). |
+| `utils/generate_media.py` | Regenerate only `archive/media.html` and `entries/photo-index.json`. |
 | `utils/generate_otd.py` | Regenerate only the On This Day pages under `archive/entries/on-this-day/`. |
+| `utils/generate_search.py` | Regenerate only `archive/entries/search-index.json` for the Search page. |
 
 ## Customization
 
