@@ -103,6 +103,12 @@ def main():
                 if old_prev != new_prev or old_next != new_next:
                     regen_keys.add(date_key)
 
+            affected_mm_dd: set[str] = set()
+            for date_key in regen_keys:
+                date_part = date_key.split("_")[0]
+                if len(date_part) == 10 and date_part[4] == "-" and date_part[7] == "-":
+                    affected_mm_dd.add(date_part[5:])
+
             # Separate imported entries from existing neighbors being rewritten.
             imported_set = set(imported_date_keys)
             neighbor_rewrites = sorted(k for k in regen_keys if k not in imported_set)
@@ -162,9 +168,13 @@ def main():
                 manifest_path=manifest_path,
             )
 
-            # On This Day: one page per calendar day (366 pages) under entries/on-this-day/
-            print("Generating On This Day pages...")
-            generate_otd_pages(entries_dir)
+            # On This Day: generate pages only for affected calendar days when possible.
+            if affected_mm_dd:
+                print("Generating On This Day pages (incremental)...")
+                generate_otd_pages(entries_dir, only_mm_dd=affected_mm_dd)
+            else:
+                print("Generating On This Day pages (full)...")
+                generate_otd_pages(entries_dir)
 
             # Map: location index for map.html (entries with lat/lng only)
             print("Building location index for map...")

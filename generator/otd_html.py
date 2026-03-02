@@ -3,6 +3,7 @@
 import json
 import re
 from pathlib import Path
+from collections.abc import Collection
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -117,9 +118,12 @@ def _format_otd_label_windows(mm_dd: str) -> str:
         return mm_dd
 
 
-def generate_otd_pages(entries_dir: Path) -> None:
+def generate_otd_pages(entries_dir: Path, only_mm_dd: Collection[str] | None = None) -> None:
     """
-    Generate one HTML page per calendar day under entries/on-this-day/ (366 pages).
+    Generate HTML pages under entries/on-this-day/.
+
+    If only_mm_dd is None, generate one page per calendar day (366 pages).
+    If only_mm_dd is provided, generate pages only for those MM-DD values.
     Entries are grouped by year (newest first), ordered by creationDate desc within year.
     Prev/next link to adjacent calendar days with wrap. No index.html.
     """
@@ -138,7 +142,16 @@ def generate_otd_pages(entries_dir: Path) -> None:
 
     tab_urls = tab_urls_for_page(archive_root, otd_dir)
 
-    for i, mm_dd in enumerate(ALL_MM_DD):
+    if only_mm_dd is None:
+        mm_dd_sequence = list(ALL_MM_DD)
+    else:
+        allowed = {d for d in only_mm_dd if d in ALL_MM_DD}
+        if not allowed:
+            return
+        mm_dd_sequence = sorted(allowed, key=ALL_MM_DD.index)
+
+    for mm_dd in mm_dd_sequence:
+        i = ALL_MM_DD.index(mm_dd)
         prev_mm_dd = ALL_MM_DD[(i - 1) % n]
         next_mm_dd = ALL_MM_DD[(i + 1) % n]
         prev_url = f"{prev_mm_dd}.html"
@@ -153,7 +166,6 @@ def generate_otd_pages(entries_dir: Path) -> None:
         years_entries: list[tuple[str, list[dict]]] = []
 
         if rows:
-            # Load entries and sort by year desc, then creationDate desc
             loaded: list[tuple[str, str, Path, dict]] = []
             for year, date_key, json_path in rows:
                 if not json_path.exists():
@@ -161,10 +173,8 @@ def generate_otd_pages(entries_dir: Path) -> None:
                 with open(json_path, encoding="utf-8") as f:
                     entry = json.load(f)
                 loaded.append((year, date_key, json_path, entry))
-            # Sort by year desc, then creationDate desc within year
             loaded.sort(key=lambda x: (x[0], x[3].get("creationDate", "") or ""), reverse=True)
 
-            # Group by year
             current_year: str | None = None
             current_list: list[dict] = []
             for year, date_key, json_path, entry in loaded:
@@ -174,7 +184,6 @@ def generate_otd_pages(entries_dir: Path) -> None:
                     current_year = year
                     current_list = []
                 entry_output_dir = output_dir_for_date_key(entries_dir, date_key)
-                # OTD page is at entries/on-this-day/ — one level up to entries/, then YYYY/MM/photos/
                 photo_src_prefix = f"../{year}/{json_path.parent.name}/"
                 ctx = _entry_context_for_otd(entry, entry_output_dir, photo_src_prefix)
                 current_list.append(ctx)
