@@ -73,15 +73,19 @@ def main():
             # Normalize any known place name spelling quirks directly in the import JSON
             # so all downstream processing (manifest, per-entry JSON, HTML) sees the
             # corrected value.
+            print("Normalizing place names in imported Day One JSON...")
             _normalize_import_json_place_names(dayone_json)
+            print("Place name normalization complete.")
             entries_dir = project_root / "archive" / "entries"
             manifest_path = entries_dir / "manifest.json"
 
             # Capture neighbor relationships before updating the manifest.
             old_prev_next = prev_next_map(manifest_path)
 
+            print("Updating manifest and per-entry JSON files...")
             create_or_update(dayone_json, manifest_path)
             write_entry_jsons(dayone_json, entries_dir)
+            print("Manifest and entry JSON update complete.")
 
             # Step 1: generate HTML only for entries in the imported Day One JSON.
             with open(dayone_json, encoding="utf-8") as f:
@@ -111,6 +115,7 @@ def main():
             total_entries = len(regen_keys_sorted)
             bar_width = 40
 
+            print("Regenerating entry HTML pages...")
             for idx, date_key in enumerate(regen_keys_sorted, start=1):
                 entry_json_dir = output_dir_for_date_key(entries_dir, date_key)
                 entry_json_path = entry_json_dir / f"{date_key}.json"
@@ -138,15 +143,19 @@ def main():
 
             if total_entries:
                 sys.stdout.write("\n")
+                print("Entry HTML generation complete.")
 
             # Keep index.html fresh without regenerating all entry pages.
             archive_root = entries_dir.parent
+            print("Generating index.html...")
             generate_index_html(import_dir, archive_root, entries_dir, manifest_path)
 
             # Calendar: archive/calendar.html (journal-by-date calendar view)
+            print("Generating calendar.html...")
             generate_calendar_html(import_dir, archive_root, entries_dir, manifest_path)
 
             # Media: archive/media.html and entries/photo-index.json (global photo index)
+            print("Generating media.html and global photo index...")
             generate_media_html(
                 archive_root=archive_root,
                 entries_dir=entries_dir,
@@ -154,13 +163,16 @@ def main():
             )
 
             # On This Day: one page per calendar day (366 pages) under entries/on-this-day/
+            print("Generating On This Day pages...")
             generate_otd_pages(entries_dir)
 
             # Map: location index for map.html (entries with lat/lng only)
+            print("Building location index for map...")
             build_location_index(entries_dir)
 
             # Search index: entries/search-index.json for client-side search
             search_index_path = entries_dir / "search-index.json"
+            print("Building search index (this may take a moment)...")
             build_search_index(entries_dir, search_index_path, verbose=True)
 
 
