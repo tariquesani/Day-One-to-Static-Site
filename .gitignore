@@ -25,3 +25,5 @@ htmlcov/
 archive/entries/photo-index.json
 utils/tag_frequency_generator.py
 copy-to-gdrive.bat
+launch.spec
+archive/launch.exe
